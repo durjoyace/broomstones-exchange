@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Equipment } from '@/lib/db';
+import ProtectedPage from '@/app/components/ProtectedPage';
 
 type EquipmentFormData = {
   type: 'shoes' | 'broom';
@@ -110,6 +111,7 @@ export default function EquipmentPage() {
   }
 
   return (
+    <ProtectedPage>
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Equipment</h1>
@@ -381,5 +383,6 @@ export default function EquipmentPage() {
         Showing {filteredEquipment.length} of {equipment.length} items
       </div>
     </div>
+    </ProtectedPage>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Equipment, Kid, CheckoutWithDetails } from '@/lib/db';
+import ProtectedPage from '@/app/components/ProtectedPage';
 
 export default function CheckoutsPage() {
   const [checkouts, setCheckouts] = useState<CheckoutWithDetails[]>([]);
@@ -192,6 +193,7 @@ export default function CheckoutsPage() {
   }
 
   return (
+    <ProtectedPage>
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Checkouts</h1>
@@ -408,5 +410,6 @@ export default function CheckoutsPage() {
         {showHistory ? `${checkouts.length} total checkouts` : `${checkouts.length} active checkouts`}
       </div>
     </div>
+    </ProtectedPage>
   );
 }

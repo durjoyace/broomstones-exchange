@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import ProtectedPage from '@/app/components/ProtectedPage';
 
 type Checkout = {
   id: number;
@@ -69,6 +70,7 @@ export default function PrintPage() {
   const checkedOutEquipment = equipment.filter((e) => e.status === 'checked_out');
 
   return (
+    <ProtectedPage>
     <div>
       {/* Screen-only controls */}
       <div className="print:hidden mb-6">
@@ -213,5 +215,6 @@ export default function PrintPage() {
         )}
       </div>
     </div>
+    </ProtectedPage>
   );
 }

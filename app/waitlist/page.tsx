@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import ProtectedPage from '@/app/components/ProtectedPage';
 
 type WaitlistEntry = {
   id: number;
@@ -63,6 +64,7 @@ export default function WaitlistPage() {
   }
 
   return (
+    <ProtectedPage>
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -126,5 +128,6 @@ export default function WaitlistPage() {
         Total: {waitlist.length} kid{waitlist.length !== 1 ? 's' : ''} on waitlist
       </div>
     </div>
+    </ProtectedPage>
   );
 }

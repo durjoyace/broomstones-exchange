@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/useAuth';
 
 type Stats = {
   equipment: {
@@ -37,6 +38,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
+  const { authenticated, logout } = useAuth(false);
 
   useEffect(() => {
     fetchStats();
@@ -291,11 +293,24 @@ export default function Dashboard() {
       </div>
 
       {/* Coordinator Section */}
-      <details className="mb-8">
-        <summary className="cursor-pointer text-lg font-semibold text-gray-700 hover:text-gray-900 py-2">
-          Coordinator Tools
-        </summary>
+      <div className="mb-8">
+        <div className="flex items-center justify-between py-2">
+          <span className="text-lg font-semibold text-gray-700">Coordinator Tools</span>
+          {authenticated ? (
+            <button
+              onClick={logout}
+              className="text-sm text-gray-500 hover:text-gray-700"
+            >
+              Logout
+            </button>
+          ) : (
+            <Link href="/admin" className="text-sm text-blue-600 hover:text-blue-800">
+              Login
+            </Link>
+          )}
+        </div>
 
+        {authenticated ? (
         <div className="mt-4 space-y-6">
           {/* Quick Actions */}
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
@@ -402,7 +417,15 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      </details>
+        ) : (
+          <div className="mt-4 card p-6 text-center">
+            <p className="text-gray-600 mb-4">Log in to access coordinator tools.</p>
+            <Link href="/admin" className="btn-primary">
+              Coordinator Login
+            </Link>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

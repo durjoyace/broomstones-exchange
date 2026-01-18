@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Kid } from '@/lib/db';
+import ProtectedPage from '@/app/components/ProtectedPage';
 
 type KidFormData = {
   name: string;
@@ -110,6 +111,7 @@ export default function KidsPage() {
   }
 
   return (
+    <ProtectedPage>
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Little Rockers</h1>
@@ -311,5 +313,6 @@ export default function KidsPage() {
         Showing {filteredKids.length} of {kids.length} Little Rockers
       </div>
     </div>
+    </ProtectedPage>
   );
 }
