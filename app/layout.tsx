@@ -62,10 +62,18 @@ export default function RootLayout({
         <footer style={{ backgroundColor: '#363839' }} className="mt-auto">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <p className="text-white/80 text-sm text-center">
-              <strong>Broomstones Curling Club</strong> - Little Rockers Program
+              <strong>Broomstones Curling Club</strong> - Junior Curling Program
             </p>
             <p className="text-white/60 text-xs text-center mt-1">
-              Equipment Coordinator: Scott Price
+              Equipment Coordinator: Scott Price -{' '}
+              <a href="mailto:Scott.Price@broomstones.org" className="text-blue-400 hover:underline">
+                Scott.Price@broomstones.org
+              </a>
+            </p>
+            <p className="text-white/40 text-xs text-center mt-2">
+              <a href="https://juniors.broomstones.org" target="_blank" rel="noopener noreferrer" className="hover:text-white/60">
+                juniors.broomstones.org
+              </a>
             </p>
           </div>
         </footer>

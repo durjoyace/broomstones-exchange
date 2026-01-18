@@ -45,6 +45,15 @@ export async function GET() {
       ORDER BY size
     `;
 
+    // Get available brooms by size
+    const availableBroomsBySize = await sql`
+      SELECT size, COUNT(*) as count
+      FROM equipment
+      WHERE type = 'broom' AND status = 'available'
+      GROUP BY size
+      ORDER BY size
+    `;
+
     // Get recent activity
     const recentActivity = await sql`
       SELECT c.*, k.name as kid_name, e.type as equipment_type, e.size as equipment_size
@@ -61,6 +70,7 @@ export async function GET() {
       checkouts: checkoutStats[0],
       kidsSizeDistribution,
       availableShoesBySize,
+      availableBroomsBySize,
       recentActivity,
     });
   } catch (error) {
