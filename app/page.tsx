@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 type Stats = {
   equipment: {
@@ -34,6 +35,8 @@ type Stats = {
 export default function Dashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const router = useRouter();
 
   useEffect(() => {
     fetchStats();
@@ -60,6 +63,29 @@ export default function Dashboard() {
     });
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      router.push(`/lookup?q=${encodeURIComponent(searchTerm)}`);
+    }
+  };
+
+  // Calculate low stock sizes (where demand > supply)
+  const getLowStockSizes = () => {
+    if (!stats) return [];
+    return stats.kidsSizeDistribution
+      .map((sizeInfo) => {
+        const available =
+          stats.availableShoesBySize.find((s) => s.size === sizeInfo.shoe_size)?.count || 0;
+        const needed = Number(sizeInfo.count);
+        if (needed > available) {
+          return { size: sizeInfo.shoe_size, needed, available, shortage: needed - available };
+        }
+        return null;
+      })
+      .filter(Boolean);
+  };
+
   if (loading) {
     return <div className="text-center py-8">Loading...</div>;
   }
@@ -68,8 +94,70 @@ export default function Dashboard() {
     return <div className="text-center py-8 text-red-600">Error loading dashboard</div>;
   }
 
+  const lowStockSizes = getLowStockSizes();
+
   return (
     <div>
+      {/* Quick Search Bar */}
+      <form onSubmit={handleSearch} className="mb-6">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="input-field flex-1 text-lg py-3"
+            placeholder="Search by child's name..."
+          />
+          <button type="submit" className="btn-primary px-6 py-3 text-lg">
+            Search
+          </button>
+        </div>
+      </form>
+
+      {/* Low Stock Alert */}
+      {lowStockSizes.length > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <h3 className="font-bold text-red-800 mb-2">Low Stock Alert</h3>
+          <p className="text-red-700 text-sm">
+            These shoe sizes are in high demand:{' '}
+            {lowStockSizes.map((item, i) => (
+              <span key={item!.size}>
+                <strong>Size {item!.size}</strong> ({item!.available} left, {item!.shortage} short)
+                {i < lowStockSizes.length - 1 ? ', ' : ''}
+              </span>
+            ))}
+          </p>
+        </div>
+      )}
+
+      {/* Mobile-Friendly Parent Actions */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <Link
+          href="/register"
+          className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg p-6 text-center transition-colors touch-manipulation"
+        >
+          <div className="text-3xl mb-2">👤</div>
+          <div className="text-lg font-bold">Register My Child</div>
+          <div className="text-blue-100 text-sm">First time? Start here</div>
+        </Link>
+        <Link
+          href="/request"
+          className="bg-green-600 hover:bg-green-700 text-white rounded-lg p-6 text-center transition-colors touch-manipulation"
+        >
+          <div className="text-3xl mb-2">📋</div>
+          <div className="text-lg font-bold">Request Equipment</div>
+          <div className="text-green-100 text-sm">Shoes or brooms</div>
+        </Link>
+        <Link
+          href="/lookup"
+          className="bg-purple-600 hover:bg-purple-700 text-white rounded-lg p-6 text-center transition-colors touch-manipulation"
+        >
+          <div className="text-3xl mb-2">🔍</div>
+          <div className="text-lg font-bold">My Equipment</div>
+          <div className="text-purple-100 text-sm">What do I have?</div>
+        </Link>
+      </div>
+
       {/* Welcome Banner */}
       <div className="bg-white border-2 border-red-800 rounded-lg p-6 mb-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Little Rockers Equipment Exchange</h1>
@@ -170,13 +258,15 @@ export default function Dashboard() {
         </div>
 
         <div className="mt-4 pt-4 border-t border-green-200">
-          <p className="text-sm text-green-700">
-            <strong>Want to borrow equipment?</strong>{' '}
-            <a href="mailto:Scott.Price@broomstones.org?subject=Equipment%20Request" className="underline">
-              Email Scott
-            </a>{' '}
-            with your child&apos;s name and the size you need, or find him at the rink.
-          </p>
+          <Link
+            href="/request"
+            className="inline-block bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-2 rounded-md transition-colors"
+          >
+            Request Equipment
+          </Link>
+          <span className="text-sm text-green-700 ml-3">
+            or find Scott at the rink
+          </span>
         </div>
       </div>
 
@@ -208,7 +298,7 @@ export default function Dashboard() {
 
         <div className="mt-4 space-y-6">
           {/* Quick Actions */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
             <Link
               href="/equipment"
               className="card p-4 text-center hover:shadow-md transition-shadow"
@@ -226,6 +316,20 @@ export default function Dashboard() {
             >
               <div className="text-2xl mb-2">+</div>
               <div className="font-medium">Check Out Item</div>
+            </Link>
+            <Link
+              href="/print"
+              className="card p-4 text-center hover:shadow-md transition-shadow"
+            >
+              <div className="text-2xl mb-2">🖨️</div>
+              <div className="font-medium">Print Sheet</div>
+            </Link>
+            <Link
+              href="/waitlist"
+              className="card p-4 text-center hover:shadow-md transition-shadow"
+            >
+              <div className="text-2xl mb-2">📋</div>
+              <div className="font-medium">Waitlist</div>
             </Link>
           </div>
 

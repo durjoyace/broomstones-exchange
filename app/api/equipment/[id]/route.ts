@@ -29,13 +29,13 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { type, size, brand, condition, status, notes } = body;
+    const { type, size, brand, condition, status, notes, photo_url } = body;
 
     const result = await sql`
       UPDATE equipment
       SET type = ${type}, size = ${size}, brand = ${brand},
           condition = ${condition}, status = ${status}, notes = ${notes},
-          updated_at = NOW()
+          photo_url = ${photo_url || null}, updated_at = NOW()
       WHERE id = ${id}
       RETURNING *
     `;

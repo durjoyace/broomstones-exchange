@@ -26,6 +26,7 @@ export type Equipment = {
   condition: 'excellent' | 'good' | 'fair' | 'poor';
   status: 'available' | 'checked_out' | 'retired';
   notes: string | null;
+  photo_url: string | null;
   created_at: Date;
   updated_at: Date;
 };

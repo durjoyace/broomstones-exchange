@@ -10,6 +10,8 @@ export default function CheckoutsPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkReturning, setBulkReturning] = useState(false);
   const [formData, setFormData] = useState({
     equipment_id: '',
     kid_id: '',
@@ -98,9 +100,78 @@ export default function CheckoutsPage() {
 
       if (res.ok) {
         fetchData();
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          next.delete(checkoutId);
+          return next;
+        });
       }
     } catch (error) {
       console.error('Error returning:', error);
+    }
+  };
+
+  const handleBulkReturn = async () => {
+    if (selectedIds.size === 0) return;
+
+    const confirmed = confirm(`Return ${selectedIds.size} item(s)?`);
+    if (!confirmed) return;
+
+    setBulkReturning(true);
+    try {
+      await Promise.all(
+        Array.from(selectedIds).map((id) =>
+          fetch(`/api/checkouts/${id}/return`, { method: 'POST' })
+        )
+      );
+      setSelectedIds(new Set());
+      fetchData();
+    } catch (error) {
+      console.error('Error bulk returning:', error);
+    } finally {
+      setBulkReturning(false);
+    }
+  };
+
+  const handleReturnAll = async () => {
+    if (checkouts.length === 0) return;
+
+    const confirmed = confirm(`Return ALL ${checkouts.length} checked out items? This is typically done at end of season.`);
+    if (!confirmed) return;
+
+    setBulkReturning(true);
+    try {
+      await Promise.all(
+        checkouts.map((c) =>
+          fetch(`/api/checkouts/${c.id}/return`, { method: 'POST' })
+        )
+      );
+      setSelectedIds(new Set());
+      fetchData();
+    } catch (error) {
+      console.error('Error returning all:', error);
+    } finally {
+      setBulkReturning(false);
+    }
+  };
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === checkouts.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(checkouts.map((c) => c.id)));
     }
   };
 
@@ -130,7 +201,7 @@ export default function CheckoutsPage() {
       </div>
 
       {/* Toggle Active/History */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex flex-wrap gap-2 mb-6 items-center">
         <button
           onClick={fetchActiveCheckouts}
           className={`px-4 py-2 rounded-md font-medium ${
@@ -147,6 +218,28 @@ export default function CheckoutsPage() {
         >
           All History
         </button>
+
+        {!showHistory && checkouts.length > 0 && (
+          <>
+            <div className="h-6 w-px bg-gray-300 mx-2" />
+            {selectedIds.size > 0 && (
+              <button
+                onClick={handleBulkReturn}
+                disabled={bulkReturning}
+                className="px-4 py-2 bg-orange-600 text-white rounded-md font-medium hover:bg-orange-700 disabled:opacity-50"
+              >
+                {bulkReturning ? 'Returning...' : `Return Selected (${selectedIds.size})`}
+              </button>
+            )}
+            <button
+              onClick={handleReturnAll}
+              disabled={bulkReturning}
+              className="px-4 py-2 bg-red-600 text-white rounded-md font-medium hover:bg-red-700 disabled:opacity-50"
+            >
+              Return All
+            </button>
+          </>
+        )}
       </div>
 
       {/* Checkout Form Modal */}
@@ -232,6 +325,16 @@ export default function CheckoutsPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead>
             <tr className="table-header">
+              {!showHistory && (
+                <th className="px-4 py-3 text-center w-12">
+                  <input
+                    type="checkbox"
+                    checked={checkouts.length > 0 && selectedIds.size === checkouts.length}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 rounded"
+                  />
+                </th>
+              )}
               <th className="px-6 py-3 text-left">Kid</th>
               <th className="px-6 py-3 text-left">Equipment</th>
               <th className="px-6 py-3 text-left">Size</th>
@@ -244,13 +347,23 @@ export default function CheckoutsPage() {
           <tbody className="divide-y divide-gray-200">
             {checkouts.length === 0 ? (
               <tr>
-                <td colSpan={showHistory ? 6 : 6} className="px-6 py-8 text-center text-gray-500">
+                <td colSpan={showHistory ? 6 : 8} className="px-6 py-8 text-center text-gray-500">
                   {showHistory ? 'No checkout history yet.' : 'No active checkouts.'}
                 </td>
               </tr>
             ) : (
               checkouts.map((checkout) => (
-                <tr key={checkout.id} className="hover:bg-gray-50">
+                <tr key={checkout.id} className={`hover:bg-gray-50 ${selectedIds.has(checkout.id) ? 'bg-blue-50' : ''}`}>
+                  {!showHistory && (
+                    <td className="px-4 py-4 text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(checkout.id)}
+                        onChange={() => toggleSelect(checkout.id)}
+                        className="w-4 h-4 rounded"
+                      />
+                    </td>
+                  )}
                   <td className="px-6 py-4 font-medium">{checkout.kid_name}</td>
                   <td className="px-6 py-4 capitalize">
                     {checkout.equipment_type}

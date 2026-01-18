@@ -10,6 +10,7 @@ type EquipmentFormData = {
   condition: 'excellent' | 'good' | 'fair' | 'poor';
   status: 'available' | 'checked_out' | 'retired';
   notes: string;
+  photo_url: string;
 };
 
 const initialFormData: EquipmentFormData = {
@@ -19,6 +20,7 @@ const initialFormData: EquipmentFormData = {
   condition: 'good',
   status: 'available',
   notes: '',
+  photo_url: '',
 };
 
 export default function EquipmentPage() {
@@ -76,6 +78,7 @@ export default function EquipmentPage() {
       condition: item.condition,
       status: item.status,
       notes: item.notes || '',
+      photo_url: item.photo_url || '',
     });
     setEditingId(item.id);
     setShowForm(true);
@@ -249,6 +252,26 @@ export default function EquipmentPage() {
                   </div>
                 )}
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Photo URL</label>
+                  <input
+                    type="url"
+                    value={formData.photo_url}
+                    onChange={(e) => setFormData({ ...formData, photo_url: e.target.value })}
+                    className="input-field"
+                    placeholder="https://example.com/photo.jpg"
+                  />
+                  {formData.photo_url && (
+                    <div className="mt-2">
+                      <img
+                        src={formData.photo_url}
+                        alt="Preview"
+                        className="w-24 h-24 object-cover rounded border"
+                        onError={(e) => (e.currentTarget.style.display = 'none')}
+                      />
+                    </div>
+                  )}
+                </div>
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
                   <textarea
                     value={formData.notes}
@@ -283,6 +306,7 @@ export default function EquipmentPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead>
             <tr className="table-header">
+              <th className="px-4 py-3 text-left w-16">Photo</th>
               <th className="px-6 py-3 text-left">Type</th>
               <th className="px-6 py-3 text-left">Size</th>
               <th className="px-6 py-3 text-left">Brand</th>
@@ -295,13 +319,27 @@ export default function EquipmentPage() {
           <tbody className="divide-y divide-gray-200">
             {filteredEquipment.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
                   No equipment found. Add some equipment to get started.
                 </td>
               </tr>
             ) : (
               filteredEquipment.map((item) => (
                 <tr key={item.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-4">
+                    {item.photo_url ? (
+                      <img
+                        src={item.photo_url}
+                        alt={`${item.type} ${item.size || ''}`}
+                        className="w-12 h-12 object-cover rounded"
+                        onError={(e) => (e.currentTarget.style.display = 'none')}
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-gray-400 text-xs">
+                        No img
+                      </div>
+                    )}
+                  </td>
                   <td className="px-6 py-4 capitalize">{item.type}</td>
                   <td className="px-6 py-4">{item.size || '-'}</td>
                   <td className="px-6 py-4">{item.brand || '-'}</td>

@@ -17,11 +17,16 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { type, size, brand, condition, notes } = body;
+    const { type, size, brand, condition, notes, photo_url } = body;
+
+    // Ensure photo_url column exists (migration)
+    await sql`
+      ALTER TABLE equipment ADD COLUMN IF NOT EXISTS photo_url TEXT
+    `;
 
     const result = await sql`
-      INSERT INTO equipment (type, size, brand, condition, status, notes)
-      VALUES (${type}, ${size}, ${brand}, ${condition || 'good'}, 'available', ${notes})
+      INSERT INTO equipment (type, size, brand, condition, status, notes, photo_url)
+      VALUES (${type}, ${size}, ${brand}, ${condition || 'good'}, 'available', ${notes}, ${photo_url || null})
       RETURNING *
     `;
 
