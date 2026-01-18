@@ -9,16 +9,15 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Broomstones Equipment Exchange",
-  description: "Equipment management for the Little Rockers junior curling program",
+  title: "Little Rockers Equipment Exchange | Broomstones",
+  description: "Free shoes and brooms lending for kids in the Little Rockers curling program at Broomstones",
 };
 
 const navigation = [
-  { name: "Dashboard", href: "/" },
+  { name: "Home", href: "/" },
   { name: "Equipment", href: "/equipment" },
   { name: "Kids", href: "/kids" },
   { name: "Checkouts", href: "/checkouts" },
-  { name: "Match", href: "/match" },
 ];
 
 export default function RootLayout({
@@ -62,8 +61,11 @@ export default function RootLayout({
         {/* Footer */}
         <footer style={{ backgroundColor: '#363839' }} className="mt-auto">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <p className="text-white/60 text-sm text-center">
-              Broomstones Curling Club - Little Rockers Program
+            <p className="text-white/80 text-sm text-center">
+              <strong>Broomstones Curling Club</strong> - Little Rockers Program
+            </p>
+            <p className="text-white/60 text-xs text-center mt-1">
+              Equipment Coordinator: Scott Price
             </p>
           </div>
         </footer>

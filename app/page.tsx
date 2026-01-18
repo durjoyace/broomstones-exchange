@@ -69,7 +69,48 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Dashboard</h1>
+      {/* Welcome Banner */}
+      <div className="bg-white border-2 border-red-800 rounded-lg p-6 mb-8">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Little Rockers Equipment Exchange</h1>
+        <p className="text-gray-700 mb-4">
+          Free equipment lending for kids in the Little Rockers curling program.
+          Borrow <strong>shoes</strong> and <strong>brooms</strong> for the season.
+        </p>
+
+        {/* Honor System Rules */}
+        <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-4">
+          <h2 className="font-bold text-amber-800 mb-2">Honor System Rules</h2>
+          <ul className="text-amber-900 space-y-1 text-sm">
+            <li>1. <strong>Return equipment at end of season</strong> - or when your child outgrows it</li>
+            <li>2. <strong>Report any damage</strong> - accidents happen, just let us know</li>
+            <li>3. <strong>One item per type</strong> - one pair of shoes, one broom per child</li>
+            <li>4. <strong>First come, first served</strong> - check availability before each session</li>
+          </ul>
+        </div>
+
+        {/* How It Works */}
+        <div className="bg-gray-50 rounded-md p-4">
+          <h2 className="font-bold text-gray-800 mb-2">How It Works</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+            <div className="flex items-start gap-2">
+              <span className="bg-red-800 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 text-xs font-bold">1</span>
+              <span><strong>Check availability</strong> below or on the Equipment page</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="bg-red-800 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 text-xs font-bold">2</span>
+              <span><strong>Find Scott</strong> at the rink to get your equipment</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="bg-red-800 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 text-xs font-bold">3</span>
+              <span><strong>Return it</strong> to Scott at end of season</span>
+            </div>
+          </div>
+        </div>
+
+        <p className="text-sm text-gray-500 mt-4">
+          Questions? Contact <strong>Scott Price</strong>, Equipment Coordinator
+        </p>
+      </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -146,8 +187,8 @@ export default function Dashboard() {
             )}
           </div>
           <div className="mt-4 pt-4 border-t">
-            <Link href="/match" className="text-sm text-blue-600 hover:text-blue-800">
-              View full matching details
+            <Link href="/equipment" className="text-sm text-blue-600 hover:text-blue-800">
+              View all equipment
             </Link>
           </div>
         </div>
@@ -188,10 +229,10 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions - for coordinator use */}
       <div className="mt-8">
-        <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <h2 className="text-lg font-semibold mb-4">Coordinator Actions</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           <Link
             href="/equipment"
             className="card p-4 text-center hover:shadow-md transition-shadow"
@@ -207,12 +248,8 @@ export default function Dashboard() {
             href="/checkouts"
             className="card p-4 text-center hover:shadow-md transition-shadow"
           >
-            <div className="text-2xl mb-2">-&gt;</div>
-            <div className="font-medium">Check Out</div>
-          </Link>
-          <Link href="/match" className="card p-4 text-center hover:shadow-md transition-shadow">
-            <div className="text-2xl mb-2">*</div>
-            <div className="font-medium">Match Sizes</div>
+            <div className="text-2xl mb-2">+</div>
+            <div className="font-medium">Check Out Item</div>
           </Link>
         </div>
       </div>
