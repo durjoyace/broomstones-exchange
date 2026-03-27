@@ -1,19 +1,33 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import ProtectedPage from '@/app/components/ProtectedPage';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { toast } from "sonner";
+import { Printer, ArrowLeft, ClipboardList, Package } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { StatusBadge } from "@/components/data-display/status-badge";
+import { ConditionBadge } from "@/components/data-display/condition-badge";
+import { EmptyState } from "@/components/data-display/empty-state";
 
-type Checkout = {
+type CheckoutRow = {
   id: number;
-  kid_name: string;
-  equipment_type: string;
-  equipment_size: string | null;
-  equipment_brand: string | null;
-  checked_out_at: string;
+  kidName: string;
+  equipmentType: string;
+  equipmentSize: string | null;
+  equipmentBrand: string | null;
+  checkedOutAt: string;
 };
 
-type Equipment = {
+type EquipmentRow = {
   id: number;
   type: string;
   size: string | null;
@@ -23,10 +37,10 @@ type Equipment = {
 };
 
 export default function PrintPage() {
-  const [checkouts, setCheckouts] = useState<Checkout[]>([]);
-  const [equipment, setEquipment] = useState<Equipment[]>([]);
+  const [checkouts, setCheckouts] = useState<CheckoutRow[]>([]);
+  const [equipment, setEquipment] = useState<EquipmentRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<'checkouts' | 'inventory'>('checkouts');
+  const [view, setView] = useState<"checkouts" | "inventory">("checkouts");
 
   useEffect(() => {
     fetchData();
@@ -35,8 +49,8 @@ export default function PrintPage() {
   const fetchData = async () => {
     try {
       const [checkoutsRes, equipmentRes] = await Promise.all([
-        fetch('/api/checkouts?active=true'),
-        fetch('/api/equipment'),
+        fetch("/api/checkouts?active=true"),
+        fetch("/api/equipment"),
       ]);
       const [checkoutsData, equipmentData] = await Promise.all([
         checkoutsRes.json(),
@@ -44,17 +58,17 @@ export default function PrintPage() {
       ]);
       setCheckouts(checkoutsData);
       setEquipment(equipmentData);
-    } catch (error) {
-      console.error('Error fetching data:', error);
+    } catch {
+      toast.error("Failed to load data");
     } finally {
       setLoading(false);
     }
   };
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
+    return new Date(date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -62,48 +76,51 @@ export default function PrintPage() {
     window.print();
   };
 
+  const availableEquipment = equipment.filter((e) => e.status === "available");
+  const checkedOutEquipment = equipment.filter(
+    (e) => e.status === "checked_out"
+  );
+
   if (loading) {
-    return <div className="text-center py-8">Loading...</div>;
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
   }
 
-  const availableEquipment = equipment.filter((e) => e.status === 'available');
-  const checkedOutEquipment = equipment.filter((e) => e.status === 'checked_out');
-
   return (
-    <ProtectedPage>
     <div>
       {/* Screen-only controls */}
       <div className="print:hidden mb-6">
         <div className="flex justify-between items-center">
-          <Link href="/" className="text-blue-600 hover:text-blue-800 text-sm">
-            ← Back to Home
-          </Link>
-          <button onClick={handlePrint} className="btn-primary">
+          <Button variant="ghost" size="sm" render={<Link href="/" />}>
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back to Home
+          </Button>
+          <Button onClick={handlePrint}>
+            <Printer className="h-4 w-4 mr-1" />
             Print This Page
-          </button>
+          </Button>
         </div>
 
         <div className="flex gap-2 mt-4">
-          <button
-            onClick={() => setView('checkouts')}
-            className={`px-4 py-2 rounded-md font-medium ${
-              view === 'checkouts'
-                ? 'bg-gray-900 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
+          <Button
+            variant={view === "checkouts" ? "default" : "outline"}
+            onClick={() => setView("checkouts")}
           >
+            <ClipboardList className="h-4 w-4 mr-1" />
             Active Checkouts
-          </button>
-          <button
-            onClick={() => setView('inventory')}
-            className={`px-4 py-2 rounded-md font-medium ${
-              view === 'inventory'
-                ? 'bg-gray-900 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
+          </Button>
+          <Button
+            variant={view === "inventory" ? "default" : "outline"}
+            onClick={() => setView("inventory")}
           >
+            <Package className="h-4 w-4 mr-1" />
             Full Inventory
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -111,110 +128,142 @@ export default function PrintPage() {
       <div className="print:p-0">
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold">Broomstones Equipment Exchange</h1>
-          <p className="text-gray-500">
-            {view === 'checkouts' ? 'Active Checkouts' : 'Equipment Inventory'} -{' '}
-            {new Date().toLocaleDateString()}
+          <p className="text-muted-foreground">
+            {view === "checkouts" ? "Active Checkouts" : "Equipment Inventory"}{" "}
+            &mdash; {new Date().toLocaleDateString()}
           </p>
         </div>
 
-        {view === 'checkouts' ? (
+        {view === "checkouts" ? (
           <>
             {checkouts.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">No active checkouts</p>
+              <EmptyState
+                icon={ClipboardList}
+                title="No active checkouts"
+                description="All equipment has been returned."
+              />
             ) : (
-              <table className="w-full border-collapse border border-gray-300 text-sm">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="border border-gray-300 px-3 py-2 text-left">Kid</th>
-                    <th className="border border-gray-300 px-3 py-2 text-left">Equipment</th>
-                    <th className="border border-gray-300 px-3 py-2 text-left">Size</th>
-                    <th className="border border-gray-300 px-3 py-2 text-left">Since</th>
-                    <th className="border border-gray-300 px-3 py-2 text-center print:hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Kid</TableHead>
+                    <TableHead>Equipment</TableHead>
+                    <TableHead>Size</TableHead>
+                    <TableHead>Since</TableHead>
+                    <TableHead className="text-center print:hidden">
                       Returned?
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {checkouts.map((checkout) => (
-                    <tr key={checkout.id}>
-                      <td className="border border-gray-300 px-3 py-2 font-medium">
-                        {checkout.kid_name}
-                      </td>
-                      <td className="border border-gray-300 px-3 py-2 capitalize">
-                        {checkout.equipment_type}
-                        {checkout.equipment_brand && (
-                          <span className="text-gray-500 text-xs ml-1">
-                            ({checkout.equipment_brand})
+                    <TableRow key={checkout.id}>
+                      <TableCell className="font-medium">
+                        {checkout.kidName}
+                      </TableCell>
+                      <TableCell className="capitalize">
+                        {checkout.equipmentType}
+                        {checkout.equipmentBrand && (
+                          <span className="text-muted-foreground text-xs ml-1">
+                            ({checkout.equipmentBrand})
                           </span>
                         )}
-                      </td>
-                      <td className="border border-gray-300 px-3 py-2">
-                        {checkout.equipment_size || '-'}
-                      </td>
-                      <td className="border border-gray-300 px-3 py-2">
-                        {formatDate(checkout.checked_out_at)}
-                      </td>
-                      <td className="border border-gray-300 px-3 py-2 text-center print:hidden">
-                        <div className="w-6 h-6 border-2 border-gray-400 rounded mx-auto"></div>
-                      </td>
-                    </tr>
+                      </TableCell>
+                      <TableCell>{checkout.equipmentSize || "-"}</TableCell>
+                      <TableCell>{formatDate(checkout.checkedOutAt)}</TableCell>
+                      <TableCell className="text-center print:hidden">
+                        <div className="w-5 h-5 border-2 border-muted-foreground/40 rounded mx-auto" />
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             )}
-            <p className="text-sm text-gray-500 mt-4">
-              Total: {checkouts.length} active checkout{checkouts.length !== 1 ? 's' : ''}
+            <p className="text-sm text-muted-foreground mt-4">
+              Total: {checkouts.length} active checkout
+              {checkouts.length !== 1 ? "s" : ""}
             </p>
           </>
         ) : (
           <>
-            <h2 className="font-bold text-lg mb-2 mt-6">Available ({availableEquipment.length})</h2>
-            <table className="w-full border-collapse border border-gray-300 text-sm mb-6">
-              <thead>
-                <tr className="bg-green-50">
-                  <th className="border border-gray-300 px-3 py-2 text-left">Type</th>
-                  <th className="border border-gray-300 px-3 py-2 text-left">Size</th>
-                  <th className="border border-gray-300 px-3 py-2 text-left">Brand</th>
-                  <th className="border border-gray-300 px-3 py-2 text-left">Condition</th>
-                </tr>
-              </thead>
-              <tbody>
-                {availableEquipment.map((item) => (
-                  <tr key={item.id}>
-                    <td className="border border-gray-300 px-3 py-2 capitalize">{item.type}</td>
-                    <td className="border border-gray-300 px-3 py-2">{item.size || '-'}</td>
-                    <td className="border border-gray-300 px-3 py-2">{item.brand || '-'}</td>
-                    <td className="border border-gray-300 px-3 py-2 capitalize">{item.condition}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <h2 className="font-bold text-lg mb-2 mt-6">
+              Available ({availableEquipment.length})
+            </h2>
+            {availableEquipment.length === 0 ? (
+              <p className="text-sm text-muted-foreground mb-6">
+                No available equipment
+              </p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Size</TableHead>
+                    <TableHead>Brand</TableHead>
+                    <TableHead>Condition</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {availableEquipment.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell className="capitalize font-medium">
+                        {item.type}
+                      </TableCell>
+                      <TableCell>{item.size || "-"}</TableCell>
+                      <TableCell>{item.brand || "-"}</TableCell>
+                      <TableCell>
+                        <ConditionBadge condition={item.condition} />
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={item.status} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
 
-            <h2 className="font-bold text-lg mb-2">Checked Out ({checkedOutEquipment.length})</h2>
-            <table className="w-full border-collapse border border-gray-300 text-sm">
-              <thead>
-                <tr className="bg-orange-50">
-                  <th className="border border-gray-300 px-3 py-2 text-left">Type</th>
-                  <th className="border border-gray-300 px-3 py-2 text-left">Size</th>
-                  <th className="border border-gray-300 px-3 py-2 text-left">Brand</th>
-                  <th className="border border-gray-300 px-3 py-2 text-left">Condition</th>
-                </tr>
-              </thead>
-              <tbody>
-                {checkedOutEquipment.map((item) => (
-                  <tr key={item.id}>
-                    <td className="border border-gray-300 px-3 py-2 capitalize">{item.type}</td>
-                    <td className="border border-gray-300 px-3 py-2">{item.size || '-'}</td>
-                    <td className="border border-gray-300 px-3 py-2">{item.brand || '-'}</td>
-                    <td className="border border-gray-300 px-3 py-2 capitalize">{item.condition}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <h2 className="font-bold text-lg mb-2 mt-8">
+              Checked Out ({checkedOutEquipment.length})
+            </h2>
+            {checkedOutEquipment.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No equipment currently checked out
+              </p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Size</TableHead>
+                    <TableHead>Brand</TableHead>
+                    <TableHead>Condition</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {checkedOutEquipment.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell className="capitalize font-medium">
+                        {item.type}
+                      </TableCell>
+                      <TableCell>{item.size || "-"}</TableCell>
+                      <TableCell>{item.brand || "-"}</TableCell>
+                      <TableCell>
+                        <ConditionBadge condition={item.condition} />
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={item.status} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </>
         )}
       </div>
     </div>
-    </ProtectedPage>
   );
 }

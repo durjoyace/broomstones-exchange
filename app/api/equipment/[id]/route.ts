@@ -1,5 +1,10 @@
-import { sql } from '@/lib/db';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import {
+  getEquipmentById,
+  updateEquipment,
+  softDeleteEquipment,
+} from "@/lib/queries/equipment";
+import { equipmentUpdateSchema } from "@/lib/validations/equipment";
 
 export async function GET(
   request: NextRequest,
@@ -7,18 +12,16 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const equipment = await sql`
-      SELECT * FROM equipment WHERE id = ${id}
-    `;
+    const item = await getEquipmentById(Number(id));
 
-    if (equipment.length === 0) {
-      return NextResponse.json({ error: 'Equipment not found' }, { status: 404 });
+    if (!item) {
+      return NextResponse.json({ error: "Equipment not found" }, { status: 404 });
     }
 
-    return NextResponse.json(equipment[0]);
+    return NextResponse.json(item);
   } catch (error) {
-    console.error('Error fetching equipment:', error);
-    return NextResponse.json({ error: 'Failed to fetch equipment' }, { status: 500 });
+    console.error("Error fetching equipment:", error);
+    return NextResponse.json({ error: "Failed to fetch equipment" }, { status: 500 });
   }
 }
 
@@ -29,25 +32,35 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { type, size, brand, condition, status, notes, photo_url } = body;
+    const parsed = equipmentUpdateSchema.safeParse(body);
 
-    const result = await sql`
-      UPDATE equipment
-      SET type = ${type}, size = ${size}, brand = ${brand},
-          condition = ${condition}, status = ${status}, notes = ${notes},
-          photo_url = ${photo_url || null}, updated_at = NOW()
-      WHERE id = ${id}
-      RETURNING *
-    `;
-
-    if (result.length === 0) {
-      return NextResponse.json({ error: 'Equipment not found' }, { status: 404 });
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.flatten() },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json(result[0]);
+    const { type, size, brand, condition, status, notes, photo_url } = parsed.data;
+
+    const item = await updateEquipment(Number(id), {
+      type,
+      size: size || null,
+      brand: brand || null,
+      condition: condition || "good",
+      status: status || "available",
+      notes: notes || null,
+      photoUrl: photo_url || null,
+    });
+
+    if (!item) {
+      return NextResponse.json({ error: "Equipment not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(item);
   } catch (error) {
-    console.error('Error updating equipment:', error);
-    return NextResponse.json({ error: 'Failed to update equipment' }, { status: 500 });
+    console.error("Error updating equipment:", error);
+    return NextResponse.json({ error: "Failed to update equipment" }, { status: 500 });
   }
 }
 
@@ -57,17 +70,15 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const result = await sql`
-      DELETE FROM equipment WHERE id = ${id} RETURNING id
-    `;
+    const item = await softDeleteEquipment(Number(id));
 
-    if (result.length === 0) {
-      return NextResponse.json({ error: 'Equipment not found' }, { status: 404 });
+    if (!item) {
+      return NextResponse.json({ error: "Equipment not found" }, { status: 404 });
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting equipment:', error);
-    return NextResponse.json({ error: 'Failed to delete equipment' }, { status: 500 });
+    console.error("Error deleting equipment:", error);
+    return NextResponse.json({ error: "Failed to delete equipment" }, { status: 500 });
   }
 }

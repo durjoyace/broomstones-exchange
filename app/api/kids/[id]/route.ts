@@ -1,5 +1,6 @@
-import { sql } from '@/lib/db';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import { getKidById, updateKid, softDeleteKid } from "@/lib/queries/kids";
+import { kidSchema } from "@/lib/validations/kid";
 
 export async function GET(
   request: NextRequest,
@@ -7,18 +8,16 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const kid = await sql`
-      SELECT * FROM kids WHERE id = ${id}
-    `;
+    const kid = await getKidById(Number(id));
 
-    if (kid.length === 0) {
-      return NextResponse.json({ error: 'Kid not found' }, { status: 404 });
+    if (!kid) {
+      return NextResponse.json({ error: "Kid not found" }, { status: 404 });
     }
 
-    return NextResponse.json(kid[0]);
+    return NextResponse.json(kid);
   } catch (error) {
-    console.error('Error fetching kid:', error);
-    return NextResponse.json({ error: 'Failed to fetch kid' }, { status: 500 });
+    console.error("Error fetching kid:", error);
+    return NextResponse.json({ error: "Failed to fetch kid" }, { status: 500 });
   }
 }
 
@@ -29,26 +28,36 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { name, grade, shoe_size, parent_name, parent_email, parent_phone, notes } = body;
+    const parsed = kidSchema.safeParse(body);
 
-    const result = await sql`
-      UPDATE kids
-      SET name = ${name}, grade = ${grade}, shoe_size = ${shoe_size},
-          parent_name = ${parent_name}, parent_email = ${parent_email},
-          parent_phone = ${parent_phone}, notes = ${notes},
-          updated_at = NOW()
-      WHERE id = ${id}
-      RETURNING *
-    `;
-
-    if (result.length === 0) {
-      return NextResponse.json({ error: 'Kid not found' }, { status: 404 });
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.flatten() },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json(result[0]);
+    const { name, grade, shoe_size, parent_name, parent_email, parent_phone, notes } =
+      parsed.data;
+
+    const kid = await updateKid(Number(id), {
+      name,
+      grade: grade || null,
+      shoeSize: shoe_size || null,
+      parentName: parent_name || null,
+      parentEmail: parent_email || null,
+      parentPhone: parent_phone || null,
+      notes: notes || null,
+    });
+
+    if (!kid) {
+      return NextResponse.json({ error: "Kid not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(kid);
   } catch (error) {
-    console.error('Error updating kid:', error);
-    return NextResponse.json({ error: 'Failed to update kid' }, { status: 500 });
+    console.error("Error updating kid:", error);
+    return NextResponse.json({ error: "Failed to update kid" }, { status: 500 });
   }
 }
 
@@ -58,17 +67,15 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const result = await sql`
-      DELETE FROM kids WHERE id = ${id} RETURNING id
-    `;
+    const kid = await softDeleteKid(Number(id));
 
-    if (result.length === 0) {
-      return NextResponse.json({ error: 'Kid not found' }, { status: 404 });
+    if (!kid) {
+      return NextResponse.json({ error: "Kid not found" }, { status: 404 });
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting kid:', error);
-    return NextResponse.json({ error: 'Failed to delete kid' }, { status: 500 });
+    console.error("Error deleting kid:", error);
+    return NextResponse.json({ error: "Failed to delete kid" }, { status: 500 });
   }
 }

@@ -1,22 +1,73 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Equipment, Kid, CheckoutWithDetails } from '@/lib/db';
-import ProtectedPage from '@/app/components/ProtectedPage';
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import {
+  Plus,
+  RotateCcw,
+  ClipboardList,
+  History,
+  PackageCheck,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { StatusBadge } from "@/components/data-display/status-badge";
+import { EmptyState } from "@/components/data-display/empty-state";
+import { ConfirmDialog } from "@/components/dialogs/confirm-dialog";
+
+type CheckoutRow = {
+  id: number;
+  equipmentId: number;
+  kidId: number;
+  checkedOutAt: string;
+  returnedAt: string | null;
+  notes: string | null;
+  kidName: string;
+  equipmentType: string;
+  equipmentSize: string | null;
+  equipmentBrand: string | null;
+};
+
+type EquipmentRow = {
+  id: number;
+  type: string;
+  size: string | null;
+  brand: string | null;
+  status: string;
+};
+
+type KidRow = {
+  id: number;
+  name: string;
+  shoeSize: string | null;
+};
 
 export default function CheckoutsPage() {
-  const [checkouts, setCheckouts] = useState<CheckoutWithDetails[]>([]);
-  const [equipment, setEquipment] = useState<Equipment[]>([]);
-  const [kids, setKids] = useState<Kid[]>([]);
+  const [checkouts, setCheckouts] = useState<CheckoutRow[]>([]);
+  const [equipment, setEquipment] = useState<EquipmentRow[]>([]);
+  const [kids, setKids] = useState<KidRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkReturning, setBulkReturning] = useState(false);
   const [formData, setFormData] = useState({
-    equipment_id: '',
-    kid_id: '',
-    notes: '',
+    equipment_id: "",
+    kid_id: "",
+    notes: "",
   });
 
   useEffect(() => {
@@ -26,9 +77,9 @@ export default function CheckoutsPage() {
   const fetchData = async () => {
     try {
       const [checkoutsRes, equipmentRes, kidsRes] = await Promise.all([
-        fetch('/api/checkouts?active=true'),
-        fetch('/api/equipment'),
-        fetch('/api/kids'),
+        fetch("/api/checkouts?active=true"),
+        fetch("/api/equipment"),
+        fetch("/api/kids"),
       ]);
       const [checkoutsData, equipmentData, kidsData] = await Promise.all([
         checkoutsRes.json(),
@@ -38,8 +89,8 @@ export default function CheckoutsPage() {
       setCheckouts(checkoutsData);
       setEquipment(equipmentData);
       setKids(kidsData);
-    } catch (error) {
-      console.error('Error fetching data:', error);
+    } catch {
+      toast.error("Failed to load data");
     } finally {
       setLoading(false);
     }
@@ -47,88 +98,88 @@ export default function CheckoutsPage() {
 
   const fetchAllCheckouts = async () => {
     try {
-      const res = await fetch('/api/checkouts');
-      const data = await res.json();
-      setCheckouts(data);
+      const res = await fetch("/api/checkouts?active=false");
+      setCheckouts(await res.json());
       setShowHistory(true);
-    } catch (error) {
-      console.error('Error fetching checkouts:', error);
+      setSelectedIds(new Set());
+    } catch {
+      toast.error("Failed to load checkout history");
     }
   };
 
   const fetchActiveCheckouts = async () => {
     try {
-      const res = await fetch('/api/checkouts?active=true');
-      const data = await res.json();
-      setCheckouts(data);
+      const res = await fetch("/api/checkouts?active=true");
+      setCheckouts(await res.json());
       setShowHistory(false);
-    } catch (error) {
-      console.error('Error fetching checkouts:', error);
+      setSelectedIds(new Set());
+    } catch {
+      toast.error("Failed to load active checkouts");
     }
   };
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/checkouts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/checkouts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           equipment_id: parseInt(formData.equipment_id),
           kid_id: parseInt(formData.kid_id),
-          notes: formData.notes,
+          notes: formData.notes || undefined,
         }),
       });
 
       if (res.ok) {
+        toast.success("Equipment checked out successfully");
         fetchData();
-        setShowForm(false);
-        setFormData({ equipment_id: '', kid_id: '', notes: '' });
+        closeForm();
       } else {
-        const error = await res.json();
-        alert(error.error || 'Failed to checkout');
+        const data = await res.json();
+        toast.error(data.error || "Failed to checkout");
       }
-    } catch (error) {
-      console.error('Error checking out:', error);
+    } catch {
+      toast.error("Failed to checkout equipment");
     }
   };
 
   const handleReturn = async (checkoutId: number) => {
     try {
       const res = await fetch(`/api/checkouts/${checkoutId}/return`, {
-        method: 'POST',
+        method: "POST",
       });
 
       if (res.ok) {
+        toast.success("Equipment returned");
         fetchData();
         setSelectedIds((prev) => {
           const next = new Set(prev);
           next.delete(checkoutId);
           return next;
         });
+      } else {
+        toast.error("Failed to return equipment");
       }
-    } catch (error) {
-      console.error('Error returning:', error);
+    } catch {
+      toast.error("Failed to return equipment");
     }
   };
 
   const handleBulkReturn = async () => {
     if (selectedIds.size === 0) return;
-
-    const confirmed = confirm(`Return ${selectedIds.size} item(s)?`);
-    if (!confirmed) return;
-
     setBulkReturning(true);
     try {
       await Promise.all(
         Array.from(selectedIds).map((id) =>
-          fetch(`/api/checkouts/${id}/return`, { method: 'POST' })
+          fetch(`/api/checkouts/${id}/return`, { method: "POST" })
         )
       );
+      toast.success(`${selectedIds.size} item(s) returned`);
       setSelectedIds(new Set());
       fetchData();
-    } catch (error) {
-      console.error('Error bulk returning:', error);
+    } catch {
+      toast.error("Some returns failed");
     } finally {
       setBulkReturning(false);
     }
@@ -136,21 +187,18 @@ export default function CheckoutsPage() {
 
   const handleReturnAll = async () => {
     if (checkouts.length === 0) return;
-
-    const confirmed = confirm(`Return ALL ${checkouts.length} checked out items? This is typically done at end of season.`);
-    if (!confirmed) return;
-
     setBulkReturning(true);
     try {
       await Promise.all(
         checkouts.map((c) =>
-          fetch(`/api/checkouts/${c.id}/return`, { method: 'POST' })
+          fetch(`/api/checkouts/${c.id}/return`, { method: "POST" })
         )
       );
+      toast.success(`All ${checkouts.length} item(s) returned`);
       setSelectedIds(new Set());
       fetchData();
-    } catch (error) {
-      console.error('Error returning all:', error);
+    } catch {
+      toast.error("Some returns failed");
     } finally {
       setBulkReturning(false);
     }
@@ -159,11 +207,8 @@ export default function CheckoutsPage() {
   const toggleSelect = (id: number) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
@@ -176,240 +221,318 @@ export default function CheckoutsPage() {
     }
   };
 
-  const availableEquipment = equipment.filter((e) => e.status === 'available');
+  const closeForm = () => {
+    setShowForm(false);
+    setFormData({ equipment_id: "", kid_id: "", notes: "" });
+  };
 
-  const formatDate = (date: Date | string) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
+  const availableEquipment = equipment.filter((e) => e.status === "available");
+
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
     });
   };
 
+  const selectClassName =
+    "mt-1 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
+
   if (loading) {
-    return <div className="text-center py-8">Loading...</div>;
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
   }
 
   return (
-    <ProtectedPage>
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Checkouts</h1>
-        <button onClick={() => setShowForm(true)} className="btn-primary">
-          + Check Out Equipment
-        </button>
+        <h1 className="text-2xl font-bold">Checkouts</h1>
+        <Button onClick={() => setShowForm(true)}>
+          <Plus className="h-4 w-4 mr-1" />
+          Check Out Equipment
+        </Button>
       </div>
 
-      {/* Toggle Active/History */}
+      {/* Toggle Active/History + Bulk Actions */}
       <div className="flex flex-wrap gap-2 mb-6 items-center">
-        <button
+        <Button
+          variant={!showHistory ? "default" : "outline"}
           onClick={fetchActiveCheckouts}
-          className={`px-4 py-2 rounded-md font-medium ${
-            !showHistory ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
         >
+          <ClipboardList className="h-4 w-4 mr-1" />
           Active Checkouts
-        </button>
-        <button
+        </Button>
+        <Button
+          variant={showHistory ? "default" : "outline"}
           onClick={fetchAllCheckouts}
-          className={`px-4 py-2 rounded-md font-medium ${
-            showHistory ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
         >
+          <History className="h-4 w-4 mr-1" />
           All History
-        </button>
+        </Button>
 
         {!showHistory && checkouts.length > 0 && (
           <>
-            <div className="h-6 w-px bg-gray-300 mx-2" />
+            <Separator orientation="vertical" className="h-6 mx-1" />
             {selectedIds.size > 0 && (
-              <button
-                onClick={handleBulkReturn}
-                disabled={bulkReturning}
-                className="px-4 py-2 bg-orange-600 text-white rounded-md font-medium hover:bg-orange-700 disabled:opacity-50"
-              >
-                {bulkReturning ? 'Returning...' : `Return Selected (${selectedIds.size})`}
-              </button>
+              <ConfirmDialog
+                trigger={
+                  <Button
+                    variant="outline"
+                    disabled={bulkReturning}
+                  >
+                    <RotateCcw className="h-4 w-4 mr-1" />
+                    {bulkReturning
+                      ? "Returning..."
+                      : `Return Selected (${selectedIds.size})`}
+                  </Button>
+                }
+                title="Return selected items?"
+                description={`This will return ${selectedIds.size} checked-out item(s) and mark them as available.`}
+                confirmLabel="Return Selected"
+                onConfirm={handleBulkReturn}
+              />
             )}
-            <button
-              onClick={handleReturnAll}
-              disabled={bulkReturning}
-              className="px-4 py-2 bg-red-600 text-white rounded-md font-medium hover:bg-red-700 disabled:opacity-50"
-            >
-              Return All
-            </button>
+            <ConfirmDialog
+              trigger={
+                <Button variant="destructive" disabled={bulkReturning}>
+                  <RotateCcw className="h-4 w-4 mr-1" />
+                  Return All
+                </Button>
+              }
+              title="Return ALL items?"
+              description={`This will return all ${checkouts.length} checked-out items. This is typically done at end of season.`}
+              confirmLabel="Return All"
+              variant="destructive"
+              onConfirm={handleReturnAll}
+            />
           </>
         )}
       </div>
 
+      {/* Season Summary Banner */}
+      {!showHistory && checkouts.length > 0 && (
+        <Card className="bg-warm-50 border-warm-200">
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium">
+                  Season Status: <span className="text-amber-700">{checkouts.length} items out</span> across{" "}
+                  {new Set(checkouts.map((c) => c.kidId)).size} kids
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Use &quot;Return All&quot; above to close out the season and make everything available again.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Checkout Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h2 className="text-xl font-bold mb-4">Check Out Equipment</h2>
-            <form onSubmit={handleCheckout}>
-              <div className="space-y-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardContent className="p-6">
+              <h2 className="text-xl font-bold mb-4">Check Out Equipment</h2>
+              <form onSubmit={handleCheckout} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Equipment <span className="text-red-500">*</span>
-                  </label>
+                  <Label>
+                    Equipment <span className="text-destructive">*</span>
+                  </Label>
                   <select
                     value={formData.equipment_id}
-                    onChange={(e) => setFormData({ ...formData, equipment_id: e.target.value })}
-                    className="input-field"
+                    onChange={(e) =>
+                      setFormData({ ...formData, equipment_id: e.target.value })
+                    }
+                    className={selectClassName}
                     required
                   >
                     <option value="">Select equipment...</option>
                     {availableEquipment.map((e) => (
                       <option key={e.id} value={e.id}>
-                        {e.type} - Size {e.size || 'N/A'} {e.brand ? `(${e.brand})` : ''}
+                        {e.type} - Size {e.size || "N/A"}{" "}
+                        {e.brand ? `(${e.brand})` : ""}
                       </option>
                     ))}
                   </select>
                   {availableEquipment.length === 0 && (
-                    <p className="text-sm text-orange-600 mt-1">No available equipment</p>
+                    <p className="text-sm text-destructive mt-1">
+                      No available equipment
+                    </p>
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Kid <span className="text-red-500">*</span>
-                  </label>
+                  <Label>
+                    Kid <span className="text-destructive">*</span>
+                  </Label>
                   <select
                     value={formData.kid_id}
-                    onChange={(e) => setFormData({ ...formData, kid_id: e.target.value })}
-                    className="input-field"
+                    onChange={(e) =>
+                      setFormData({ ...formData, kid_id: e.target.value })
+                    }
+                    className={selectClassName}
                     required
                   >
                     <option value="">Select kid...</option>
                     {kids.map((k) => (
                       <option key={k.id} value={k.id}>
-                        {k.name} {k.shoe_size ? `(Size ${k.shoe_size})` : ''}
+                        {k.name} {k.shoeSize ? `(Size ${k.shoeSize})` : ""}
                       </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                  <textarea
+                  <Label>Notes</Label>
+                  <Textarea
                     value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    className="input-field"
+                    onChange={(e) =>
+                      setFormData({ ...formData, notes: e.target.value })
+                    }
                     rows={2}
                     placeholder="Any notes about this checkout..."
+                    className="mt-1"
                   />
                 </div>
-              </div>
-              <div className="flex justify-end gap-2 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="px-4 py-2 border rounded-md hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="btn-primary"
-                  disabled={availableEquipment.length === 0}
-                >
-                  Check Out
-                </button>
-              </div>
-            </form>
-          </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button type="button" variant="outline" onClick={closeForm}>
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={availableEquipment.length === 0}
+                  >
+                    Check Out
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       )}
 
-      {/* Checkouts List */}
-      <div className="card overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead>
-            <tr className="table-header">
+      {/* Checkouts Table */}
+      <Card>
+        <Table>
+          <TableHeader>
+            <TableRow>
               {!showHistory && (
-                <th className="px-4 py-3 text-center w-12">
-                  <input
-                    type="checkbox"
-                    checked={checkouts.length > 0 && selectedIds.size === checkouts.length}
-                    onChange={toggleSelectAll}
-                    className="w-4 h-4 rounded"
+                <TableHead className="w-10">
+                  <Checkbox
+                    checked={
+                      checkouts.length > 0 &&
+                      selectedIds.size === checkouts.length
+                    }
+                    onCheckedChange={toggleSelectAll}
                   />
-                </th>
+                </TableHead>
               )}
-              <th className="px-6 py-3 text-left">Kid</th>
-              <th className="px-6 py-3 text-left">Equipment</th>
-              <th className="px-6 py-3 text-left">Size</th>
-              <th className="px-6 py-3 text-left">Checked Out</th>
-              {showHistory && <th className="px-6 py-3 text-left">Returned</th>}
-              <th className="px-6 py-3 text-left">Notes</th>
-              {!showHistory && <th className="px-6 py-3 text-right">Action</th>}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
+              <TableHead>Kid</TableHead>
+              <TableHead>Equipment</TableHead>
+              <TableHead>Size</TableHead>
+              <TableHead>Checked Out</TableHead>
+              {showHistory && <TableHead>Returned</TableHead>}
+              <TableHead className="hidden md:table-cell">Notes</TableHead>
+              {!showHistory && (
+                <TableHead className="text-right">Action</TableHead>
+              )}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {checkouts.length === 0 ? (
-              <tr>
-                <td colSpan={showHistory ? 6 : 8} className="px-6 py-8 text-center text-gray-500">
-                  {showHistory ? 'No checkout history yet.' : 'No active checkouts.'}
-                </td>
-              </tr>
+              <TableRow>
+                <TableCell colSpan={showHistory ? 6 : 7}>
+                  <EmptyState
+                    icon={PackageCheck}
+                    title={
+                      showHistory
+                        ? "No checkout history yet"
+                        : "No active checkouts"
+                    }
+                    description={
+                      showHistory
+                        ? "Checkouts will appear here once equipment is checked out."
+                        : "Click 'Check Out Equipment' to get started."
+                    }
+                  />
+                </TableCell>
+              </TableRow>
             ) : (
               checkouts.map((checkout) => (
-                <tr key={checkout.id} className={`hover:bg-gray-50 ${selectedIds.has(checkout.id) ? 'bg-blue-50' : ''}`}>
+                <TableRow
+                  key={checkout.id}
+                  data-state={
+                    selectedIds.has(checkout.id) ? "selected" : undefined
+                  }
+                >
                   {!showHistory && (
-                    <td className="px-4 py-4 text-center">
-                      <input
-                        type="checkbox"
+                    <TableCell>
+                      <Checkbox
                         checked={selectedIds.has(checkout.id)}
-                        onChange={() => toggleSelect(checkout.id)}
-                        className="w-4 h-4 rounded"
+                        onCheckedChange={() => toggleSelect(checkout.id)}
                       />
-                    </td>
+                    </TableCell>
                   )}
-                  <td className="px-6 py-4 font-medium">{checkout.kid_name}</td>
-                  <td className="px-6 py-4 capitalize">
-                    {checkout.equipment_type}
-                    {checkout.equipment_brand && (
-                      <span className="text-gray-500 text-sm ml-1">({checkout.equipment_brand})</span>
+                  <TableCell className="font-medium">
+                    {checkout.kidName}
+                  </TableCell>
+                  <TableCell className="capitalize">
+                    {checkout.equipmentType}
+                    {checkout.equipmentBrand && (
+                      <span className="text-muted-foreground text-xs ml-1">
+                        ({checkout.equipmentBrand})
+                      </span>
                     )}
-                  </td>
-                  <td className="px-6 py-4">{checkout.equipment_size || '-'}</td>
-                  <td className="px-6 py-4 text-sm">{formatDate(checkout.checked_out_at)}</td>
+                  </TableCell>
+                  <TableCell>{checkout.equipmentSize || "-"}</TableCell>
+                  <TableCell className="text-sm">
+                    {formatDate(checkout.checkedOutAt)}
+                  </TableCell>
                   {showHistory && (
-                    <td className="px-6 py-4 text-sm">
-                      {checkout.returned_at ? (
-                        formatDate(checkout.returned_at)
-                      ) : (
-                        <span className="status-checked-out px-2 py-1 rounded-full text-xs">
-                          Still out
+                    <TableCell>
+                      {checkout.returnedAt ? (
+                        <span className="text-sm">
+                          {formatDate(checkout.returnedAt)}
                         </span>
+                      ) : (
+                        <StatusBadge status="checked_out" />
                       )}
-                    </td>
+                    </TableCell>
                   )}
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
-                    {checkout.notes || '-'}
-                  </td>
+                  <TableCell className="hidden md:table-cell text-sm text-muted-foreground max-w-[200px] truncate">
+                    {checkout.notes || "-"}
+                  </TableCell>
                   {!showHistory && (
-                    <td className="px-6 py-4 text-right">
-                      <button
+                    <TableCell className="text-right">
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleReturn(checkout.id)}
-                        className="btn-secondary text-sm"
                       >
+                        <RotateCcw className="h-3.5 w-3.5 mr-1" />
                         Return
-                      </button>
-                    </td>
+                      </Button>
+                    </TableCell>
                   )}
-                </tr>
+                </TableRow>
               ))
             )}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </Card>
 
-      <div className="mt-4 text-sm text-gray-500">
-        {showHistory ? `${checkouts.length} total checkouts` : `${checkouts.length} active checkouts`}
-      </div>
+      <p className="mt-3 text-sm text-muted-foreground">
+        {showHistory
+          ? `${checkouts.length} total checkouts`
+          : `${checkouts.length} active checkouts`}
+      </p>
     </div>
-    </ProtectedPage>
   );
 }

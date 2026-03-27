@@ -1,27 +1,52 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Equipment } from '@/lib/db';
-import ProtectedPage from '@/app/components/ProtectedPage';
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { Plus, Pencil, Trash2, Package, ImageIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { StatusBadge } from "@/components/data-display/status-badge";
+import { ConditionBadge } from "@/components/data-display/condition-badge";
+import { EmptyState } from "@/components/data-display/empty-state";
+import { ConfirmDialog } from "@/components/dialogs/confirm-dialog";
+import { SearchInput } from "@/components/forms/search-input";
+import {
+  EQUIPMENT_TYPES,
+  EQUIPMENT_CONDITIONS,
+  EQUIPMENT_STATUSES,
+} from "@/lib/constants";
+import type { Equipment } from "@/lib/db";
 
-type EquipmentFormData = {
-  type: 'shoes' | 'broom';
+type FormData = {
+  type: string;
   size: string;
   brand: string;
-  condition: 'excellent' | 'good' | 'fair' | 'poor';
-  status: 'available' | 'checked_out' | 'retired';
+  condition: string;
+  status: string;
   notes: string;
   photo_url: string;
 };
 
-const initialFormData: EquipmentFormData = {
-  type: 'shoes',
-  size: '',
-  brand: '',
-  condition: 'good',
-  status: 'available',
-  notes: '',
-  photo_url: '',
+const initialForm: FormData = {
+  type: "shoes",
+  size: "",
+  brand: "",
+  condition: "good",
+  status: "available",
+  notes: "",
+  photo_url: "",
 };
 
 export default function EquipmentPage() {
@@ -29,8 +54,8 @@ export default function EquipmentPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [formData, setFormData] = useState<EquipmentFormData>(initialFormData);
-  const [filter, setFilter] = useState({ type: '', status: '', size: '' });
+  const [formData, setFormData] = useState<FormData>(initialForm);
+  const [filter, setFilter] = useState({ type: "", status: "", search: "" });
 
   useEffect(() => {
     fetchEquipment();
@@ -38,11 +63,10 @@ export default function EquipmentPage() {
 
   const fetchEquipment = async () => {
     try {
-      const res = await fetch('/api/equipment');
-      const data = await res.json();
-      setEquipment(data);
-    } catch (error) {
-      console.error('Error fetching equipment:', error);
+      const res = await fetch("/api/equipment");
+      setEquipment(await res.json());
+    } catch {
+      toast.error("Failed to load equipment");
     } finally {
       setLoading(false);
     }
@@ -51,338 +75,363 @@ export default function EquipmentPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const url = editingId ? `/api/equipment/${editingId}` : '/api/equipment';
-      const method = editingId ? 'PUT' : 'POST';
-
+      const url = editingId ? `/api/equipment/${editingId}` : "/api/equipment";
       const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
+        method: editingId ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
       if (res.ok) {
+        toast.success(editingId ? "Equipment updated" : "Equipment added");
         fetchEquipment();
-        setShowForm(false);
-        setEditingId(null);
-        setFormData(initialFormData);
+        closeForm();
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Failed to save");
       }
-    } catch (error) {
-      console.error('Error saving equipment:', error);
+    } catch {
+      toast.error("Failed to save equipment");
     }
   };
 
   const handleEdit = (item: Equipment) => {
     setFormData({
       type: item.type,
-      size: item.size || '',
-      brand: item.brand || '',
+      size: item.size || "",
+      brand: item.brand || "",
       condition: item.condition,
       status: item.status,
-      notes: item.notes || '',
-      photo_url: item.photo_url || '',
+      notes: item.notes || "",
+      photo_url: item.photoUrl || "",
     });
     setEditingId(item.id);
     setShowForm(true);
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this equipment?')) return;
     try {
-      const res = await fetch(`/api/equipment/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/equipment/${id}`, { method: "DELETE" });
       if (res.ok) {
+        toast.success("Equipment removed");
         fetchEquipment();
       }
-    } catch (error) {
-      console.error('Error deleting equipment:', error);
+    } catch {
+      toast.error("Failed to delete");
     }
   };
 
-  const filteredEquipment = equipment.filter((item) => {
+  const closeForm = () => {
+    setShowForm(false);
+    setEditingId(null);
+    setFormData(initialForm);
+  };
+
+  const update = (field: string, value: string) =>
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+  const filtered = equipment.filter((item) => {
     if (filter.type && item.type !== filter.type) return false;
     if (filter.status && item.status !== filter.status) return false;
-    if (filter.size && item.size !== filter.size) return false;
+    if (filter.search) {
+      const q = filter.search.toLowerCase();
+      return (
+        item.brand?.toLowerCase().includes(q) ||
+        item.size?.toLowerCase().includes(q) ||
+        item.notes?.toLowerCase().includes(q)
+      );
+    }
     return true;
   });
 
-  const uniqueSizes = [...new Set(equipment.map((e) => e.size).filter(Boolean))].sort();
-
   if (loading) {
-    return <div className="text-center py-8">Loading...</div>;
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
   }
 
   return (
-    <ProtectedPage>
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Equipment</h1>
-        <button
+        <h1 className="text-2xl font-bold">Equipment</h1>
+        <Button
           onClick={() => {
-            setFormData(initialFormData);
+            setFormData(initialForm);
             setEditingId(null);
             setShowForm(true);
           }}
-          className="btn-primary"
         >
-          + Add Equipment
-        </button>
+          <Plus className="h-4 w-4 mr-1" />
+          Add Equipment
+        </Button>
       </div>
 
       {/* Filters */}
-      <div className="card p-4 mb-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-            <select
-              value={filter.type}
-              onChange={(e) => setFilter({ ...filter, type: e.target.value })}
-              className="input-field"
-            >
-              <option value="">All Types</option>
-              <option value="shoes">Shoes</option>
-              <option value="broom">Brooms</option>
-            </select>
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <Label>Type</Label>
+              <select
+                value={filter.type}
+                onChange={(e) => setFilter({ ...filter, type: e.target.value })}
+                className="mt-1 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                <option value="">All Types</option>
+                {EQUIPMENT_TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label>Status</Label>
+              <select
+                value={filter.status}
+                onChange={(e) =>
+                  setFilter({ ...filter, status: e.target.value })
+                }
+                className="mt-1 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                <option value="">All Statuses</option>
+                {EQUIPMENT_STATUSES.map((s) => (
+                  <option key={s.value} value={s.value}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label>Search</Label>
+              <SearchInput
+                value={filter.search}
+                onChange={(v) => setFilter({ ...filter, search: v })}
+                placeholder="Brand, size, notes..."
+                className="mt-1"
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select
-              value={filter.status}
-              onChange={(e) => setFilter({ ...filter, status: e.target.value })}
-              className="input-field"
-            >
-              <option value="">All Statuses</option>
-              <option value="available">Available</option>
-              <option value="checked_out">Checked Out</option>
-              <option value="retired">Retired</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Size</label>
-            <select
-              value={filter.size}
-              onChange={(e) => setFilter({ ...filter, size: e.target.value })}
-              className="input-field"
-            >
-              <option value="">All Sizes</option>
-              {uniqueSizes.map((size) => (
-                <option key={size} value={size!}>
-                  {size}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Equipment Form Modal */}
+      {/* Form Dialog */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h2 className="text-xl font-bold mb-4">
-              {editingId ? 'Edit Equipment' : 'Add Equipment'}
-            </h2>
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <CardContent className="p-6">
+              <h2 className="text-xl font-bold mb-4">
+                {editingId ? "Edit Equipment" : "Add Equipment"}
+              </h2>
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                  <Label>Type</Label>
                   <select
                     value={formData.type}
-                    onChange={(e) =>
-                      setFormData({ ...formData, type: e.target.value as 'shoes' | 'broom' })
-                    }
-                    className="input-field"
+                    onChange={(e) => update("type", e.target.value)}
+                    className="mt-1 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     required
                   >
-                    <option value="shoes">Shoes</option>
-                    <option value="broom">Broom</option>
+                    {EQUIPMENT_TYPES.map((t) => (
+                      <option key={t.value} value={t.value}>
+                        {t.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Size</label>
-                  <input
-                    type="text"
+                  <Label>Size</Label>
+                  <Input
                     value={formData.size}
-                    onChange={(e) => setFormData({ ...formData, size: e.target.value })}
-                    className="input-field"
-                    placeholder={formData.type === 'shoes' ? 'e.g., 5, 6, 7' : 'e.g., Junior, Adult'}
+                    onChange={(e) => update("size", e.target.value)}
+                    placeholder={
+                      formData.type === "shoes"
+                        ? "e.g., 5, 6, 7"
+                        : "e.g., Junior, Adult"
+                    }
+                    className="mt-1"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
-                  <input
-                    type="text"
+                  <Label>Brand</Label>
+                  <Input
                     value={formData.brand}
-                    onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                    className="input-field"
+                    onChange={(e) => update("brand", e.target.value)}
                     placeholder="e.g., BalancePlus, Asham"
+                    className="mt-1"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Condition</label>
+                  <Label>Condition</Label>
                   <select
                     value={formData.condition}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        condition: e.target.value as EquipmentFormData['condition'],
-                      })
-                    }
-                    className="input-field"
+                    onChange={(e) => update("condition", e.target.value)}
+                    className="mt-1 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   >
-                    <option value="excellent">Excellent</option>
-                    <option value="good">Good</option>
-                    <option value="fair">Fair</option>
-                    <option value="poor">Poor</option>
+                    {EQUIPMENT_CONDITIONS.map((c) => (
+                      <option key={c.value} value={c.value}>
+                        {c.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 {editingId && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <Label>Status</Label>
                     <select
                       value={formData.status}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          status: e.target.value as EquipmentFormData['status'],
-                        })
-                      }
-                      className="input-field"
+                      onChange={(e) => update("status", e.target.value)}
+                      className="mt-1 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     >
-                      <option value="available">Available</option>
-                      <option value="checked_out">Checked Out</option>
-                      <option value="retired">Retired</option>
+                      {EQUIPMENT_STATUSES.map((s) => (
+                        <option key={s.value} value={s.value}>
+                          {s.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 )}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Photo URL</label>
-                  <input
+                  <Label>Photo URL</Label>
+                  <Input
                     type="url"
                     value={formData.photo_url}
-                    onChange={(e) => setFormData({ ...formData, photo_url: e.target.value })}
-                    className="input-field"
+                    onChange={(e) => update("photo_url", e.target.value)}
                     placeholder="https://example.com/photo.jpg"
+                    className="mt-1"
                   />
                   {formData.photo_url && (
-                    <div className="mt-2">
-                      <img
-                        src={formData.photo_url}
-                        alt="Preview"
-                        className="w-24 h-24 object-cover rounded border"
-                        onError={(e) => (e.currentTarget.style.display = 'none')}
-                      />
-                    </div>
+                    <img
+                      src={formData.photo_url}
+                      alt="Preview"
+                      className="w-20 h-20 object-cover rounded mt-2"
+                      onError={(e) =>
+                        (e.currentTarget.style.display = "none")
+                      }
+                    />
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                  <textarea
+                  <Label>Notes</Label>
+                  <Textarea
                     value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    className="input-field"
+                    onChange={(e) => update("notes", e.target.value)}
                     rows={2}
+                    className="mt-1"
                   />
                 </div>
-              </div>
-              <div className="flex justify-end gap-2 mt-6">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowForm(false);
-                    setEditingId(null);
-                  }}
-                  className="px-4 py-2 border rounded-md hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="btn-primary">
-                  {editingId ? 'Save Changes' : 'Add Equipment'}
-                </button>
-              </div>
-            </form>
-          </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button type="button" variant="outline" onClick={closeForm}>
+                    Cancel
+                  </Button>
+                  <Button type="submit">
+                    {editingId ? "Save Changes" : "Add Equipment"}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       )}
 
       {/* Equipment Table */}
-      <div className="card overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead>
-            <tr className="table-header">
-              <th className="px-4 py-3 text-left w-16">Photo</th>
-              <th className="px-6 py-3 text-left">Type</th>
-              <th className="px-6 py-3 text-left">Size</th>
-              <th className="px-6 py-3 text-left">Brand</th>
-              <th className="px-6 py-3 text-left">Condition</th>
-              <th className="px-6 py-3 text-left">Status</th>
-              <th className="px-6 py-3 text-left">Notes</th>
-              <th className="px-6 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {filteredEquipment.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
-                  No equipment found. Add some equipment to get started.
-                </td>
-              </tr>
+      <Card className="overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-14">Photo</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Size</TableHead>
+              <TableHead>Brand</TableHead>
+              <TableHead>Condition</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="hidden md:table-cell">Notes</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filtered.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={8}>
+                  <EmptyState
+                    icon={Package}
+                    title="No equipment found"
+                    description="Add some equipment to get started."
+                  />
+                </TableCell>
+              </TableRow>
             ) : (
-              filteredEquipment.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-4">
-                    {item.photo_url ? (
+              filtered.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>
+                    {item.photoUrl ? (
                       <img
-                        src={item.photo_url}
-                        alt={`${item.type} ${item.size || ''}`}
-                        className="w-12 h-12 object-cover rounded"
-                        onError={(e) => (e.currentTarget.style.display = 'none')}
+                        src={item.photoUrl}
+                        alt={`${item.type} ${item.size || ""}`}
+                        className="w-10 h-10 object-cover rounded"
+                        onError={(e) =>
+                          (e.currentTarget.style.display = "none")
+                        }
                       />
                     ) : (
-                      <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-gray-400 text-xs">
-                        No img
+                      <div className="w-10 h-10 bg-muted rounded flex items-center justify-center">
+                        <ImageIcon className="h-4 w-4 text-muted-foreground" />
                       </div>
                     )}
-                  </td>
-                  <td className="px-6 py-4 capitalize">{item.type}</td>
-                  <td className="px-6 py-4">{item.size || '-'}</td>
-                  <td className="px-6 py-4">{item.brand || '-'}</td>
-                  <td className={`px-6 py-4 capitalize condition-${item.condition}`}>
-                    {item.condition}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium status-${item.status.replace('_', '-')}`}
-                    >
-                      {item.status.replace('_', ' ')}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
-                    {item.notes || '-'}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => handleEdit(item)}
-                      className="text-blue-600 hover:text-blue-800 mr-3"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
+                  </TableCell>
+                  <TableCell className="capitalize font-medium">
+                    {item.type}
+                  </TableCell>
+                  <TableCell>{item.size || "-"}</TableCell>
+                  <TableCell>{item.brand || "-"}</TableCell>
+                  <TableCell>
+                    <ConditionBadge condition={item.condition} />
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge status={item.status} />
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell text-sm text-muted-foreground max-w-[200px] truncate">
+                    {item.notes || "-"}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => handleEdit(item)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                        <span className="sr-only">Edit</span>
+                      </Button>
+                      <ConfirmDialog
+                        trigger={
+                          <Button variant="ghost" size="icon-sm">
+                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                            <span className="sr-only">Delete</span>
+                          </Button>
+                        }
+                        title="Delete equipment?"
+                        description="This will mark the equipment as retired. Active checkouts will not be affected."
+                        confirmLabel="Delete"
+                        variant="destructive"
+                        onConfirm={() => handleDelete(item.id)}
+                      />
+                    </div>
+                  </TableCell>
+                </TableRow>
               ))
             )}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </Card>
 
-      <div className="mt-4 text-sm text-gray-500">
-        Showing {filteredEquipment.length} of {equipment.length} items
-      </div>
+      <p className="mt-3 text-sm text-muted-foreground">
+        Showing {filtered.length} of {equipment.length} items
+      </p>
     </div>
-    </ProtectedPage>
   );
 }

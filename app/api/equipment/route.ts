@@ -1,38 +1,43 @@
-import { sql } from '@/lib/db';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import { getAllEquipment, createEquipment } from "@/lib/queries/equipment";
+import { equipmentSchema } from "@/lib/validations/equipment";
 
 export async function GET() {
   try {
-    const equipment = await sql`
-      SELECT * FROM equipment
-      ORDER BY created_at DESC
-    `;
-    return NextResponse.json(equipment);
+    const items = await getAllEquipment();
+    return NextResponse.json(items);
   } catch (error) {
-    console.error('Error fetching equipment:', error);
-    return NextResponse.json({ error: 'Failed to fetch equipment' }, { status: 500 });
+    console.error("Error fetching equipment:", error);
+    return NextResponse.json({ error: "Failed to fetch equipment" }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { type, size, brand, condition, notes, photo_url } = body;
+    const parsed = equipmentSchema.safeParse(body);
 
-    // Ensure photo_url column exists (migration)
-    await sql`
-      ALTER TABLE equipment ADD COLUMN IF NOT EXISTS photo_url TEXT
-    `;
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
 
-    const result = await sql`
-      INSERT INTO equipment (type, size, brand, condition, status, notes, photo_url)
-      VALUES (${type}, ${size}, ${brand}, ${condition || 'good'}, 'available', ${notes}, ${photo_url || null})
-      RETURNING *
-    `;
+    const { type, size, brand, condition, notes, photo_url } = parsed.data;
 
-    return NextResponse.json(result[0], { status: 201 });
+    const item = await createEquipment({
+      type,
+      size: size || null,
+      brand: brand || null,
+      condition: condition || "good",
+      notes: notes || null,
+      photoUrl: photo_url || null,
+    });
+
+    return NextResponse.json(item, { status: 201 });
   } catch (error) {
-    console.error('Error creating equipment:', error);
-    return NextResponse.json({ error: 'Failed to create equipment' }, { status: 500 });
+    console.error("Error creating equipment:", error);
+    return NextResponse.json({ error: "Failed to create equipment" }, { status: 500 });
   }
 }

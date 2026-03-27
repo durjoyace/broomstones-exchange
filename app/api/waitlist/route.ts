@@ -1,67 +1,44 @@
-import { sql } from '@/lib/db';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import { getActiveWaitlist, addToWaitlist } from "@/lib/queries/waitlist";
+import { waitlistSchema } from "@/lib/validations/waitlist";
 
 export async function GET() {
   try {
-    const waitlist = await sql`
-      SELECT w.*, k.name as kid_name, k.parent_email
-      FROM equipment_waitlist w
-      JOIN kids k ON w.kid_id = k.id
-      WHERE w.notified_at IS NULL
-      ORDER BY w.created_at ASC
-    `;
+    const waitlist = await getActiveWaitlist();
     return NextResponse.json(waitlist);
   } catch (error) {
-    console.error('Error fetching waitlist:', error);
-    return NextResponse.json({ error: 'Failed to fetch waitlist' }, { status: 500 });
+    console.error("Error fetching waitlist:", error);
+    return NextResponse.json({ error: "Failed to fetch waitlist" }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { kid_id, equipment_type, size } = body;
+    const parsed = waitlistSchema.safeParse(body);
 
-    if (!kid_id || !equipment_type || !size) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Kid, equipment type, and size are required' },
+        { error: "Validation failed", details: parsed.error.flatten() },
         { status: 400 }
       );
     }
 
-    // Create table if not exists
-    await sql`
-      CREATE TABLE IF NOT EXISTS equipment_waitlist (
-        id SERIAL PRIMARY KEY,
-        kid_id INTEGER NOT NULL REFERENCES kids(id) ON DELETE CASCADE,
-        equipment_type VARCHAR(50) NOT NULL,
-        size VARCHAR(20) NOT NULL,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        notified_at TIMESTAMP WITH TIME ZONE,
-        UNIQUE(kid_id, equipment_type, size)
-      )
-    `;
+    const { kid_id, equipment_type, size } = parsed.data;
 
-    // Check if already on waitlist
-    const existing = await sql`
-      SELECT id FROM equipment_waitlist
-      WHERE kid_id = ${kid_id} AND equipment_type = ${equipment_type} AND size = ${size}
-      AND notified_at IS NULL
-    `;
+    const result = await addToWaitlist({
+      kidId: kid_id,
+      equipmentType: equipment_type,
+      size,
+    });
 
-    if (existing.length > 0) {
-      return NextResponse.json({ message: 'Already on waitlist' }, { status: 200 });
+    if ("alreadyExists" in result) {
+      return NextResponse.json({ message: "Already on waitlist" });
     }
 
-    const result = await sql`
-      INSERT INTO equipment_waitlist (kid_id, equipment_type, size)
-      VALUES (${kid_id}, ${equipment_type}, ${size})
-      RETURNING *
-    `;
-
-    return NextResponse.json(result[0], { status: 201 });
+    return NextResponse.json(result.entry, { status: 201 });
   } catch (error) {
-    console.error('Error adding to waitlist:', error);
-    return NextResponse.json({ error: 'Failed to add to waitlist' }, { status: 500 });
+    console.error("Error adding to waitlist:", error);
+    return NextResponse.json({ error: "Failed to add to waitlist" }, { status: 500 });
   }
 }

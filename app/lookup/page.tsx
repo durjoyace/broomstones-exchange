@@ -1,41 +1,50 @@
-'use client';
+"use client";
 
-import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
+import { useState, useEffect, Suspense, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft, Search, Package } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/data-display/empty-state";
 
 type CheckoutInfo = {
   id: number;
-  equipment_type: string;
-  equipment_size: string | null;
-  equipment_brand: string | null;
-  checked_out_at: string;
+  equipmentType: string;
+  equipmentSize: string | null;
+  equipmentBrand: string | null;
+  checkedOutAt: string;
 };
 
 type KidInfo = {
   id: number;
   name: string;
-  shoe_size: string | null;
+  shoeSize: string | null;
   checkouts: CheckoutInfo[];
 };
 
+function formatDate(date: string) {
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 function LookupContent() {
   const searchParams = useSearchParams();
-  const initialQuery = searchParams.get('q') || '';
+  const initialQuery = searchParams.get("q") || "";
 
   const [searchTerm, setSearchTerm] = useState(initialQuery);
   const [results, setResults] = useState<KidInfo[]>([]);
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (initialQuery) {
-      performSearch(initialQuery);
-    }
-  }, [initialQuery]);
-
-  const performSearch = async (query: string) => {
-    if (!query.trim()) return;
+  const performSearch = useCallback(async (query: string) => {
+    if (!query.trim() || query.length < 2) return;
 
     setLoading(true);
     try {
@@ -44,118 +53,153 @@ function LookupContent() {
       setResults(data);
       setSearched(true);
     } catch (error) {
-      console.error('Error searching:', error);
+      console.error("Error searching:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (initialQuery) {
+      performSearch(initialQuery);
+    }
+  }, [initialQuery, performSearch]);
+
+  // Debounced search
+  useEffect(() => {
+    if (searchTerm.length < 2) return;
+    const timer = setTimeout(() => performSearch(searchTerm), 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm, performSearch]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     performSearch(searchTerm);
   };
 
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-6">
-        <Link href="/" className="text-blue-600 hover:text-blue-800 text-sm">
-          ← Back to Home
-        </Link>
+        <Button variant="ghost" size="sm" render={<Link href="/" />}>
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          Back to Home
+        </Button>
       </div>
 
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">My Equipment</h1>
-      <p className="text-gray-600 mb-6">
+      <h1 className="text-2xl font-bold mb-2">My Equipment</h1>
+      <p className="text-muted-foreground mb-6">
         Look up what equipment your child currently has checked out.
       </p>
 
       <form onSubmit={handleSearch} className="mb-8">
         <div className="flex gap-2">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="input-field flex-1"
-            placeholder="Enter child's name..."
-            autoFocus
-          />
-          <button type="submit" className="btn-primary px-6" disabled={loading}>
-            {loading ? 'Searching...' : 'Search'}
-          </button>
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Enter child's name..."
+              autoFocus
+              className="pl-9"
+            />
+          </div>
+          <Button type="submit" disabled={loading}>
+            {loading ? "Searching..." : "Search"}
+          </Button>
         </div>
       </form>
 
-      {searched && results.length === 0 && (
-        <div className="card p-8 text-center">
-          <p className="text-gray-500 mb-4">No results found for &quot;{searchTerm}&quot;</p>
-          <p className="text-sm text-gray-400">
-            If your child isn&apos;t registered yet,{' '}
-            <Link href="/register" className="text-blue-600 hover:underline">
-              register them here
-            </Link>
-            .
-          </p>
+      {loading && (
+        <div className="space-y-4">
+          {[1, 2].map((i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <Skeleton className="h-6 w-40 mb-2" />
+                <Skeleton className="h-4 w-24 mb-4" />
+                <Skeleton className="h-12 w-full" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
 
-      {results.length > 0 && (
+      {!loading && searched && results.length === 0 && (
+        <EmptyState
+          icon={Search}
+          title={`No results for "${searchTerm}"`}
+          description="If your child isn't registered yet, you can register them."
+          action={
+            <Button variant="outline" render={<Link href="/register" />}>
+              Register Your Child
+            </Button>
+          }
+        />
+      )}
+
+      {!loading && results.length > 0 && (
         <div className="space-y-4">
           {results.map((kid) => (
-            <div key={kid.id} className="card p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h2 className="text-xl font-semibold">{kid.name}</h2>
-                  {kid.shoe_size && (
-                    <p className="text-sm text-gray-500">Shoe size: {kid.shoe_size}</p>
+            <Card key={kid.id}>
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h2 className="text-xl font-semibold">{kid.name}</h2>
+                    {kid.shoeSize && (
+                      <p className="text-sm text-muted-foreground">
+                        Shoe size: {kid.shoeSize}
+                      </p>
+                    )}
+                  </div>
+                  {kid.checkouts.length > 0 && (
+                    <Badge variant="secondary" className="bg-amber-100 text-amber-800">
+                      {kid.checkouts.length} item
+                      {kid.checkouts.length > 1 ? "s" : ""} out
+                    </Badge>
                   )}
                 </div>
-                {kid.checkouts.length > 0 && (
-                  <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded text-sm">
-                    {kid.checkouts.length} item{kid.checkouts.length > 1 ? 's' : ''} out
-                  </span>
-                )}
-              </div>
 
-              {kid.checkouts.length === 0 ? (
-                <p className="text-gray-500 text-sm">No equipment currently checked out.</p>
-              ) : (
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-gray-700">Currently has:</p>
-                  {kid.checkouts.map((checkout) => (
-                    <div
-                      key={checkout.id}
-                      className="flex justify-between items-center bg-gray-50 p-3 rounded"
-                    >
-                      <div>
-                        <span className="font-medium capitalize">{checkout.equipment_type}</span>
-                        {checkout.equipment_size && (
-                          <span className="text-gray-500"> - Size {checkout.equipment_size}</span>
-                        )}
-                        {checkout.equipment_brand && (
-                          <span className="text-gray-400 text-sm ml-2">
-                            ({checkout.equipment_brand})
+                {kid.checkouts.length === 0 ? (
+                  <p className="text-muted-foreground text-sm">
+                    No equipment currently checked out.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Currently has:</p>
+                    {kid.checkouts.map((checkout) => (
+                      <div
+                        key={checkout.id}
+                        className="flex justify-between items-center bg-muted/50 p-3 rounded-lg"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Package className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium capitalize">
+                            {checkout.equipmentType}
                           </span>
-                        )}
+                          {checkout.equipmentSize && (
+                            <span className="text-muted-foreground">
+                              Size {checkout.equipmentSize}
+                            </span>
+                          )}
+                          {checkout.equipmentBrand && (
+                            <span className="text-muted-foreground text-sm">
+                              ({checkout.equipmentBrand})
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          Since {formatDate(checkout.checkedOutAt)}
+                        </span>
                       </div>
-                      <span className="text-sm text-gray-500">
-                        Since {formatDate(checkout.checked_out_at)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
 
-              <div className="mt-4 pt-4 border-t text-sm text-gray-500">
-                To return equipment, bring it to Scott at the rink.
-              </div>
-            </div>
+                <div className="mt-4 pt-4 border-t text-sm text-muted-foreground">
+                  To return equipment, bring it to Scott at the rink.
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
@@ -165,7 +209,15 @@ function LookupContent() {
 
 export default function LookupPage() {
   return (
-    <Suspense fallback={<div className="text-center py-8">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="max-w-2xl mx-auto">
+          <Skeleton className="h-8 w-48 mb-6" />
+          <Skeleton className="h-10 w-full mb-8" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      }
+    >
       <LookupContent />
     </Suspense>
   );
