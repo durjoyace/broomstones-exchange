@@ -24,10 +24,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} antialiased min-h-screen flex flex-col bg-[#fafafa]`}
+        className={`${inter.variable} antialiased min-h-screen flex flex-col bg-gray-50`}
       >
         <Header />
-        <main className="max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-10 flex-1">
+        <main className="max-w-6xl mx-auto w-full px-6 py-8 flex-1">
           {children}
         </main>
         <Footer />

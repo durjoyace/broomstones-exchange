@@ -20,16 +20,11 @@ import {
   Footprints,
   Brush,
   ArrowRight,
-  ArrowUpRight,
   Zap,
   Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 type Stats = {
@@ -63,11 +58,10 @@ function formatDate(date: string) {
   });
 }
 
-function formatTime(date: string) {
-  return new Date(date).toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-  });
+function countColor(n: number) {
+  if (n <= 1) return "text-red-500";
+  if (n <= 2) return "text-orange-500";
+  return "text-green-600";
 }
 
 export default function Dashboard() {
@@ -95,13 +89,14 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-[200px] w-full rounded-2xl" />
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Skeleton className="h-[220px] w-full rounded-xl" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-20 rounded-xl" />
+            <Skeleton key={i} className="h-24 rounded-xl" />
           ))}
         </div>
-        <Skeleton className="h-48 w-full rounded-xl" />
+        <Skeleton className="h-12 w-full rounded-lg" />
+        <Skeleton className="h-64 w-full rounded-xl" />
       </div>
     );
   }
@@ -110,10 +105,8 @@ export default function Dashboard() {
     return (
       <div className="text-center py-20">
         <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-3" />
-        <p className="font-semibold text-sm">Unable to load dashboard</p>
-        <p className="text-xs text-[#71717a] mt-1">
-          Please refresh the page.
-        </p>
+        <p className="font-bold text-gray-900">Unable to load dashboard</p>
+        <p className="text-sm text-gray-500 mt-1">Please refresh the page.</p>
       </div>
     );
   }
@@ -129,227 +122,238 @@ export default function Dashboard() {
     })
     .filter(Boolean);
 
+  const totalShoeAvail = stats.availableShoesBySize.reduce(
+    (s, x) => s + Number(x.count), 0
+  );
+  const totalBroomAvail = stats.availableBroomsBySize.reduce(
+    (s, x) => s + Number(x.count), 0
+  );
+
   return (
     <div className="space-y-6">
       {/* ──── Hero ──── */}
-      <section className="relative rounded-2xl overflow-hidden bg-[#0a0a0a] px-6 sm:px-8 py-8 sm:py-10">
-        {/* Gradient accent */}
-        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#911f1f] rounded-full blur-[120px] opacity-20" />
-        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#911f1f] rounded-full blur-[100px] opacity-10" />
+      <div className="bg-gray-900 rounded-xl p-8 md:p-10 shadow-lg">
+        <div className="inline-block bg-red-800 text-white rounded-full px-3 py-1 text-xs font-semibold tracking-wider uppercase mb-6">
+          Little Rockers Program
+        </div>
 
-        <div className="relative">
-          <Badge className="bg-[#911f1f] text-white hover:bg-[#911f1f] text-[10px] font-semibold tracking-wide uppercase px-2.5 py-0.5 mb-4">
-            Little Rockers Program
-          </Badge>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight leading-tight mb-2">
-            Equipment Exchange
-          </h1>
-          <p className="text-[#a1a1aa] text-sm max-w-md leading-relaxed mb-6">
-            Borrow curling shoes and brooms for the season — completely free.
-            Register your child, pick a size, and grab it from Scott at the rink.
-          </p>
+        <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          Equipment Exchange
+        </h1>
 
-          {/* CTAs */}
-          <div className="flex flex-wrap gap-2">
-            <Button
-              size="sm"
-              className="bg-white text-[#0a0a0a] hover:bg-[#f4f4f5] font-semibold text-xs h-9 px-4"
-              render={<Link href="/register" />}
-            >
-              <UserPlus className="h-3.5 w-3.5 mr-1.5" />
-              Register Child
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="border-[#27272a] text-white hover:bg-[#18181b] hover:text-white font-medium text-xs h-9 px-4"
-              render={<Link href="/request" />}
-            >
-              <ClipboardList className="h-3.5 w-3.5 mr-1.5" />
-              Request Equipment
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="border-[#27272a] text-white hover:bg-[#18181b] hover:text-white font-medium text-xs h-9 px-4"
-              render={<Link href="/lookup" />}
-            >
-              <Eye className="h-3.5 w-3.5 mr-1.5" />
-              Look Up My Stuff
-            </Button>
+        <p className="text-gray-400 max-w-2xl mb-8 text-lg">
+          Borrow curling shoes and brooms for the season — completely free.
+          Register your child, pick a size, and grab it from Scott at the rink.
+        </p>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/register"
+            className="border border-gray-600 text-white rounded-lg px-4 py-2.5 hover:bg-gray-800 flex items-center gap-2 transition-colors font-medium text-sm"
+          >
+            <UserPlus className="w-4 h-4" />
+            Register Child
+          </Link>
+          <Link
+            href="/request"
+            className="border border-gray-600 text-white rounded-lg px-4 py-2.5 hover:bg-gray-800 flex items-center gap-2 transition-colors font-medium text-sm"
+          >
+            <ClipboardList className="w-4 h-4" />
+            Request Equipment
+          </Link>
+          <Link
+            href="/lookup"
+            className="border border-gray-600 text-white rounded-lg px-4 py-2.5 hover:bg-gray-800 flex items-center gap-2 transition-colors font-medium text-sm"
+          >
+            <Eye className="w-4 h-4" />
+            Look Up My Stuff
+          </Link>
+        </div>
+      </div>
+
+      {/* ──── Stats ──── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+          <div className="uppercase text-xs tracking-wider text-gray-500 font-semibold mb-2">
+            Available
+          </div>
+          <div className="text-3xl font-bold text-green-600">
+            {stats.equipment.available}
+          </div>
+          <div className="text-sm text-gray-500">of {stats.equipment.total}</div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+          <div className="uppercase text-xs tracking-wider text-gray-500 font-semibold mb-2">
+            Checked Out
+          </div>
+          <div className="text-3xl font-bold text-orange-500">
+            {stats.checkouts.activeCheckouts}
+          </div>
+          <div className="text-sm text-gray-500">
+            {stats.kids.total} kids registered
           </div>
         </div>
-      </section>
-
-      {/* ──── Stats Grid ──── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {[
-          {
-            label: "Available",
-            value: stats.equipment.available,
-            change: `of ${stats.equipment.total}`,
-            color: "text-emerald-600",
-          },
-          {
-            label: "Checked Out",
-            value: stats.checkouts.activeCheckouts,
-            change: `${stats.kids.total} kids registered`,
-            color: "text-amber-600",
-          },
-          {
-            label: "Shoes",
-            value: stats.equipment.totalShoes,
-            change: `${stats.availableShoesBySize.reduce((s, x) => s + Number(x.count), 0)} available`,
-            color: "text-[#0a0a0a]",
-          },
-          {
-            label: "Brooms",
-            value: stats.equipment.totalBrooms,
-            change: `${stats.availableBroomsBySize.reduce((s, x) => s + Number(x.count), 0)} available`,
-            color: "text-[#0a0a0a]",
-          },
-        ].map((stat) => (
-          <div
-            key={stat.label}
-            className="bg-white rounded-xl border border-[#e4e4e7] p-4"
-          >
-            <p className="text-[11px] font-medium text-[#71717a] uppercase tracking-wider">
-              {stat.label}
-            </p>
-            <p className={cn("text-2xl font-bold tracking-tight mt-1", stat.color)}>
-              {stat.value}
-            </p>
-            <p className="text-[11px] text-[#a1a1aa] mt-0.5">{stat.change}</p>
+        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+          <div className="uppercase text-xs tracking-wider text-gray-500 font-semibold mb-2">
+            Shoes
           </div>
-        ))}
+          <div className="text-3xl font-bold text-gray-900">
+            {stats.equipment.totalShoes}
+          </div>
+          <div className="text-sm text-gray-500">{totalShoeAvail} available</div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+          <div className="uppercase text-xs tracking-wider text-gray-500 font-semibold mb-2">
+            Brooms
+          </div>
+          <div className="text-3xl font-bold text-gray-900">
+            {stats.equipment.totalBrooms}
+          </div>
+          <div className="text-sm text-gray-500">{totalBroomAvail} available</div>
+        </div>
       </div>
 
       {/* ──── Low Stock Alert ──── */}
       {lowStockSizes.length > 0 && (
-        <div className="flex items-center gap-2.5 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
-          <AlertTriangle className="h-3.5 w-3.5 text-red-500 shrink-0" />
-          <p className="text-xs text-red-700">
-            <span className="font-semibold">Low stock:</span>{" "}
+        <div className="w-full bg-orange-50 border border-orange-200 rounded-lg px-4 py-3 flex items-center gap-3">
+          <AlertTriangle className="w-5 h-5 text-orange-600 shrink-0" />
+          <div className="text-orange-600 text-sm">
+            <span className="font-semibold mr-1">Low stock:</span>
             {lowStockSizes.map((item, i) => (
               <span key={item!.size}>
                 Size {item!.size} ({item!.available} left)
                 {i < lowStockSizes.length - 1 ? ", " : ""}
               </span>
             ))}
-          </p>
+          </div>
         </div>
       )}
 
       {/* ──── Search ──── */}
       <form onSubmit={handleSearch}>
-        <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#a1a1aa]" />
-          <Input
+        <div className="relative w-full">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-gray-400" />
+          </div>
+          <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-10 text-sm rounded-xl bg-white border-[#e4e4e7]"
+            className="block w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-800 focus:border-transparent transition-shadow shadow-sm"
             placeholder="Search by child's name..."
           />
         </div>
       </form>
 
-      {/* ──── Equipment Availability ──── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {[
-          {
-            title: "Shoes",
-            icon: Footprints,
-            items: stats.availableShoesBySize,
-            iconBg: "bg-blue-50",
-            iconColor: "text-blue-600",
-          },
-          {
-            title: "Brooms",
-            icon: Brush,
-            items: stats.availableBroomsBySize,
-            iconBg: "bg-amber-50",
-            iconColor: "text-amber-600",
-          },
-        ].map((section) => (
-          <div
-            key={section.title}
-            className="bg-white rounded-xl border border-[#e4e4e7] overflow-hidden"
-          >
-            <div className="flex items-center gap-2.5 px-4 py-3 border-b border-[#f4f4f5]">
-              <div
-                className={cn(
-                  "w-7 h-7 rounded-lg flex items-center justify-center",
-                  section.iconBg
-                )}
-              >
-                <section.icon className={cn("h-3.5 w-3.5", section.iconColor)} />
+      {/* ──── Inventory Grid ──── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Shoes */}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+          <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
+                <Footprints className="w-4 h-4 text-blue-600" />
               </div>
-              <span className="text-sm font-semibold text-[#0a0a0a]">
-                {section.title}
-              </span>
-              <Badge
-                variant="secondary"
-                className="ml-auto text-[10px] font-medium"
-              >
-                {section.items.reduce((s, x) => s + Number(x.count), 0)} avail
-              </Badge>
+              <h2 className="font-bold text-gray-900 text-lg">Shoes</h2>
             </div>
-            {section.items.length === 0 ? (
-              <p className="text-xs text-[#a1a1aa] py-6 text-center">
-                None available
-              </p>
-            ) : (
-              <div className="divide-y divide-[#f4f4f5]">
-                {section.items.map((item) => (
-                  <div
-                    key={item.size || "std"}
-                    className="flex justify-between items-center px-4 py-2.5 hover:bg-[#fafafa] transition-colors"
-                  >
-                    <span className="text-sm text-[#3f3f46]">
-                      {section.title === "Shoes" ? `Size ${item.size}` : item.size || "Standard"}
-                    </span>
-                    <span className="text-sm font-semibold text-emerald-600 tabular-nums">
-                      {item.count}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <span className="bg-gray-100 text-gray-600 rounded-full px-2.5 py-0.5 text-xs font-medium">
+              {totalShoeAvail} avail
+            </span>
           </div>
-        ))}
+          {stats.availableShoesBySize.length === 0 ? (
+            <div className="py-8 text-center text-gray-400 text-sm">
+              None available right now
+            </div>
+          ) : (
+            <div className="flex flex-col">
+              {stats.availableShoesBySize.map((item, i) => (
+                <div
+                  key={item.size}
+                  className={cn(
+                    "flex justify-between py-3 px-5 hover:bg-gray-50 transition-colors",
+                    i < stats.availableShoesBySize.length - 1 &&
+                      "border-b border-gray-100"
+                  )}
+                >
+                  <span className="text-gray-700">Size {item.size}</span>
+                  <span className={cn("font-semibold", countColor(Number(item.count)))}>
+                    {item.count}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Brooms */}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm self-start">
+          <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center">
+                <Brush className="w-4 h-4 text-orange-600" />
+              </div>
+              <h2 className="font-bold text-gray-900 text-lg">Brooms</h2>
+            </div>
+            <span className="bg-gray-100 text-gray-600 rounded-full px-2.5 py-0.5 text-xs font-medium">
+              {totalBroomAvail} avail
+            </span>
+          </div>
+          {stats.availableBroomsBySize.length === 0 ? (
+            <div className="py-8 text-center text-gray-400 text-sm">
+              None available right now
+            </div>
+          ) : (
+            <div className="flex flex-col">
+              {stats.availableBroomsBySize.map((item, i) => (
+                <div
+                  key={item.size || "std"}
+                  className={cn(
+                    "flex justify-between py-3 px-5 hover:bg-gray-50 transition-colors",
+                    i < stats.availableBroomsBySize.length - 1 &&
+                      "border-b border-gray-100"
+                  )}
+                >
+                  <span className="text-gray-700">
+                    {item.size || "Standard"}
+                  </span>
+                  <span className={cn("font-semibold", countColor(Number(item.count)))}>
+                    {item.count}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ──── How It Works ──── */}
-      <div className="bg-white rounded-xl border border-[#e4e4e7] p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <Info className="h-4 w-4 text-[#71717a]" />
-          <h3 className="text-sm font-semibold text-[#0a0a0a]">
-            How it works
-          </h3>
+      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+        <div className="flex items-center gap-2 mb-5">
+          <Info className="h-4 w-4 text-gray-400" />
+          <h3 className="text-sm font-bold text-gray-900">How it works</h3>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
-            { n: "1", label: "Register", desc: "Add your child's info", href: "/register" },
-            { n: "2", label: "Request", desc: "Pick a size & type", href: "/request" },
+            { n: "1", label: "Register", desc: "Add your child's name & shoe size", href: "/register" },
+            { n: "2", label: "Request", desc: "Pick shoes or a broom by size", href: "/request" },
             { n: "3", label: "Pick up", desc: "See Scott at the rink", href: null },
-            { n: "4", label: "Return", desc: "End of season", href: null },
+            { n: "4", label: "Return", desc: "Bring it back end of season", href: null },
           ].map((step) => (
             <div key={step.n} className="flex gap-3">
-              <div className="w-6 h-6 rounded-full bg-[#0a0a0a] text-white text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+              <div className="w-7 h-7 rounded-full bg-gray-900 text-white text-xs font-bold flex items-center justify-center shrink-0">
                 {step.n}
               </div>
               <div>
-                <p className="text-sm font-semibold text-[#0a0a0a] leading-tight">
-                  {step.label}
+                <p className="text-sm font-bold text-gray-900">{step.label}</p>
+                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                  {step.desc}
                 </p>
-                <p className="text-xs text-[#71717a] mt-0.5">{step.desc}</p>
                 {step.href && (
                   <Link
                     href={step.href}
-                    className="text-[11px] text-[#911f1f] font-medium mt-1 inline-flex items-center gap-0.5 hover:underline"
+                    className="text-xs text-red-800 font-semibold mt-1 inline-flex items-center gap-0.5 hover:underline"
                   >
-                    Go <ArrowUpRight className="h-2.5 w-2.5" />
+                    Go <ArrowRight className="h-3 w-3" />
                   </Link>
                 )}
               </div>
@@ -358,39 +362,43 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ──── Guidelines ──── */}
-      <div className="flex gap-3 text-xs text-[#71717a] bg-[#f4f4f5] rounded-xl px-4 py-3">
-        <span className="font-medium text-[#3f3f46] shrink-0">Honor system:</span>
+      {/* ──── Honor System ──── */}
+      <div className="bg-gray-100 rounded-lg px-5 py-3 text-sm text-gray-500 flex gap-2">
+        <span className="font-semibold text-gray-700 shrink-0">Honor system:</span>
         <span>
-          Return at end of season · Report damage · 1 pair shoes + 1 broom per child · First come, first served
+          Return at end of season · Report damage · 1 pair shoes + 1 broom per
+          child · First come, first served
         </span>
       </div>
 
       {/* ──── Coordinator ──── */}
-      <section className="pt-2">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-[11px] font-semibold text-[#71717a] uppercase tracking-wider">
+      <div className="border-t border-gray-200 pt-6">
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
             Coordinator
-          </p>
+          </span>
           {authenticated ? (
             <button
               onClick={logout}
-              className="text-[11px] text-[#a1a1aa] hover:text-[#71717a] transition-colors"
+              className="text-xs text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1"
             >
+              <LogOut className="h-3 w-3" />
               Logout
             </button>
           ) : (
             <Link
               href="/admin"
-              className="text-[11px] text-[#a1a1aa] hover:text-[#71717a] transition-colors"
+              className="text-xs text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1"
             >
+              <LogIn className="h-3 w-3" />
               Login
             </Link>
           )}
         </div>
 
         {authenticated ? (
-          <div className="space-y-3">
+          <div className="space-y-4">
+            {/* Quick actions */}
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
               {[
                 { href: "/equipment", icon: Package, label: "Equipment" },
@@ -401,9 +409,9 @@ export default function Dashboard() {
                 { href: "/waitlist", icon: ClipboardList, label: "Waitlist" },
               ].map((a) => (
                 <Link key={a.href} href={a.href}>
-                  <div className="bg-white border border-[#e4e4e7] rounded-xl py-3 text-center hover:border-[#d4d4d8] hover:shadow-sm transition-all">
-                    <a.icon className="h-4 w-4 mx-auto mb-1 text-[#71717a]" />
-                    <span className="text-[11px] font-medium text-[#3f3f46]">
+                  <div className="bg-white border border-gray-200 rounded-xl py-3.5 text-center hover:border-gray-300 hover:shadow-sm transition-all">
+                    <a.icon className="h-4 w-4 mx-auto mb-1.5 text-gray-500" />
+                    <span className="text-xs font-medium text-gray-700">
                       {a.label}
                     </span>
                   </div>
@@ -411,17 +419,18 @@ export default function Dashboard() {
               ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {/* Demand + Activity */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Demand */}
-              <div className="bg-white rounded-xl border border-[#e4e4e7] overflow-hidden">
-                <div className="px-4 py-3 border-b border-[#f4f4f5]">
-                  <p className="text-[11px] font-semibold text-[#71717a] uppercase tracking-wider">
+              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                <div className="px-5 py-3 border-b border-gray-100">
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                     Demand vs Supply
-                  </p>
+                  </span>
                 </div>
-                <div className="p-4">
+                <div className="p-5">
                   {stats.kidsSizeDistribution.length === 0 ? (
-                    <p className="text-xs text-[#a1a1aa] py-4 text-center">
+                    <p className="text-sm text-gray-400 text-center py-4">
                       No data yet
                     </p>
                   ) : (
@@ -433,22 +442,30 @@ export default function Dashboard() {
                           )?.count ?? 0;
                         const needed = Number(sizeInfo.count);
                         const short = needed > available;
-                        const pct = Math.min((available / Math.max(needed, 1)) * 100, 100);
+                        const pct = Math.min(
+                          (available / Math.max(needed, 1)) * 100,
+                          100
+                        );
                         return (
                           <div key={sizeInfo.shoeSize}>
-                            <div className="flex justify-between text-xs mb-1">
-                              <span className="font-medium text-[#3f3f46] tabular-nums">
+                            <div className="flex justify-between text-sm mb-1">
+                              <span className="font-medium text-gray-700">
                                 Size {sizeInfo.shoeSize}
                               </span>
-                              <span className={short ? "text-red-500 font-medium" : "text-emerald-600 font-medium"}>
+                              <span
+                                className={cn(
+                                  "font-semibold",
+                                  short ? "text-red-500" : "text-green-600"
+                                )}
+                              >
                                 {available}/{needed}
                               </span>
                             </div>
-                            <div className="h-1 bg-[#f4f4f5] rounded-full">
+                            <div className="h-1.5 bg-gray-100 rounded-full">
                               <div
                                 className={cn(
                                   "h-full rounded-full transition-all duration-700",
-                                  short ? "bg-red-400" : "bg-emerald-400"
+                                  short ? "bg-red-400" : "bg-green-400"
                                 )}
                                 style={{ width: `${pct}%` }}
                               />
@@ -462,67 +479,67 @@ export default function Dashboard() {
               </div>
 
               {/* Activity */}
-              <div className="bg-white rounded-xl border border-[#e4e4e7] overflow-hidden">
-                <div className="px-4 py-3 border-b border-[#f4f4f5] flex items-center justify-between">
-                  <p className="text-[11px] font-semibold text-[#71717a] uppercase tracking-wider">
-                    Activity
-                  </p>
+              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    Recent Activity
+                  </span>
                   <Link
                     href="/checkouts"
-                    className="text-[11px] text-[#a1a1aa] hover:text-[#71717a] transition-colors"
+                    className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
                   >
                     View all
                   </Link>
                 </div>
-                <div className="divide-y divide-[#f4f4f5]">
-                  {stats.recentActivity.length === 0 ? (
-                    <p className="text-xs text-[#a1a1aa] py-6 text-center">
-                      No activity yet
-                    </p>
-                  ) : (
-                    stats.recentActivity.slice(0, 6).map((a) => (
+                {stats.recentActivity.length === 0 ? (
+                  <div className="p-5 text-sm text-gray-400 text-center">
+                    No activity yet
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-100">
+                    {stats.recentActivity.slice(0, 6).map((a) => (
                       <div
                         key={a.id}
-                        className="flex items-center gap-2.5 px-4 py-2.5"
+                        className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors"
                       >
                         <div
                           className={cn(
-                            "w-1.5 h-1.5 rounded-full shrink-0",
-                            a.returnedAt ? "bg-emerald-400" : "bg-amber-400"
+                            "w-2 h-2 rounded-full shrink-0",
+                            a.returnedAt ? "bg-green-400" : "bg-orange-400"
                           )}
                         />
-                        <div className="flex-1 min-w-0">
-                          <span className="text-xs font-medium text-[#3f3f46]">
+                        <div className="flex-1 min-w-0 text-sm">
+                          <span className="font-medium text-gray-900">
                             {a.kidName}
                           </span>
-                          <span className="text-xs text-[#a1a1aa] ml-1.5">
+                          <span className="text-gray-400 ml-1.5">
                             {a.returnedAt ? "returned" : "borrowed"}{" "}
                             {a.equipmentType}
-                            {a.equipmentSize ? ` ${a.equipmentSize}` : ""}
+                            {a.equipmentSize ? ` (${a.equipmentSize})` : ""}
                           </span>
                         </div>
-                        <span className="text-[10px] text-[#a1a1aa] tabular-nums shrink-0">
+                        <span className="text-xs text-gray-400 shrink-0">
                           {formatDate(a.returnedAt || a.checkedOutAt)}
                         </span>
                       </div>
-                    ))
-                  )}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white border border-[#e4e4e7] rounded-xl py-8 text-center">
-            <p className="text-xs text-[#a1a1aa] mb-3">
+          <div className="bg-white border border-gray-200 rounded-xl py-10 text-center shadow-sm">
+            <p className="text-sm text-gray-400 mb-3">
               Coordinator tools require login.
             </p>
-            <Button size="sm" className="text-xs h-8" render={<Link href="/admin" />}>
-              <LogIn className="h-3 w-3 mr-1.5" />
+            <Button size="sm" render={<Link href="/admin" />}>
+              <LogIn className="h-3.5 w-3.5 mr-1.5" />
               Login
             </Button>
           </div>
         )}
-      </section>
+      </div>
     </div>
   );
 }
