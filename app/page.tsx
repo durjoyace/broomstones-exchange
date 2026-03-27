@@ -21,9 +21,10 @@ import {
   Footprints,
   Brush,
   ArrowRight,
-  Sparkles,
   Shield,
-  Heart,
+  ChevronRight,
+  CircleDot,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -90,22 +91,14 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="space-y-8">
-        <div className="rounded-2xl bg-burgundy/5 p-8">
-          <Skeleton className="h-10 w-96 mb-4" />
-          <Skeleton className="h-6 w-64 mb-8" />
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-40 rounded-xl" />
-            ))}
-          </div>
-        </div>
-        <Skeleton className="h-12 w-full rounded-xl" />
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-28" />
+      <div className="space-y-6">
+        <Skeleton className="h-[280px] w-full rounded-2xl" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-24 rounded-xl" />
           ))}
         </div>
+        <Skeleton className="h-48 w-full rounded-xl" />
       </div>
     );
   }
@@ -114,9 +107,7 @@ export default function Dashboard() {
     return (
       <div className="text-center py-20">
         <AlertTriangle className="h-10 w-10 text-destructive mx-auto mb-3" />
-        <p className="text-destructive font-medium">
-          Unable to load dashboard
-        </p>
+        <p className="font-medium text-[#363839]">Unable to load dashboard</p>
         <p className="text-sm text-muted-foreground mt-1">
           Please refresh the page or try again later.
         </p>
@@ -127,8 +118,7 @@ export default function Dashboard() {
   const lowStockSizes = stats.kidsSizeDistribution
     .map((s) => {
       const available =
-        stats.availableShoesBySize.find((a) => a.size === s.shoeSize)?.count ??
-        0;
+        stats.availableShoesBySize.find((a) => a.size === s.shoeSize)?.count ?? 0;
       const needed = Number(s.count);
       return needed > available
         ? { size: s.shoeSize, needed, available, shortage: needed - available }
@@ -136,76 +126,138 @@ export default function Dashboard() {
     })
     .filter(Boolean);
 
-  return (
-    <div className="space-y-10">
-      {/* ──── Hero Section ──── */}
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#911f1f] via-[#7a1a1a] to-[#5c1414] px-6 sm:px-10 py-10 sm:py-14">
-        {/* Decorative circles */}
-        <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-white/5" />
-        <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-white/5" />
-        <div className="absolute top-10 right-10 w-24 h-24 rounded-full bg-white/3" />
+  const totalAvailableShoes = stats.availableShoesBySize.reduce(
+    (sum, s) => sum + Number(s.count),
+    0
+  );
+  const totalAvailableBrooms = stats.availableBroomsBySize.reduce(
+    (sum, s) => sum + Number(s.count),
+    0
+  );
 
-        <div className="relative">
-          <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="h-4 w-4 text-amber-300" />
-            <span className="text-amber-200 text-sm font-medium tracking-wide uppercase">
-              Little Rockers Program
-            </span>
-          </div>
-          <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl text-white leading-tight mb-3">
-            Equipment Exchange
+  return (
+    <div className="space-y-8">
+      {/* ──── Hero ──── */}
+      <section className="relative rounded-2xl overflow-hidden bg-[#911f1f]">
+        {/* Pattern overlay for texture */}
+        <div
+          className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+            backgroundSize: "24px 24px",
+          }}
+        />
+        <div className="relative px-6 sm:px-10 py-10 sm:py-12">
+          <p className="text-white/60 text-xs font-semibold tracking-[0.2em] uppercase mb-2">
+            Broomstones Curling Club
+          </p>
+          <h1 className="font-display text-[2rem] sm:text-[2.5rem] text-white leading-[1.15] mb-2">
+            Little Rockers<br />Equipment Exchange
           </h1>
-          <p className="text-white/75 text-lg max-w-xl mb-8">
-            Free curling shoes and brooms for kids in the program. Borrow for
-            the season, return when done.
+          <p className="text-white/70 text-[15px] max-w-md mb-8">
+            Borrow curling shoes and brooms for free. Pick up at the rink,
+            return at end of season.
           </p>
 
-          {/* Parent Action Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          {/* Three big CTA buttons */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
               {
                 href: "/register",
                 icon: UserPlus,
-                title: "Register My Child",
-                desc: "First time? Start here",
-                accent: "from-white/20 to-white/10 hover:from-white/25 hover:to-white/15",
+                label: "Register My Child",
+                sub: "New to the program? Start here",
               },
               {
                 href: "/request",
                 icon: ClipboardList,
-                title: "Request Equipment",
-                desc: "Shoes or brooms",
-                accent: "from-white/20 to-white/10 hover:from-white/25 hover:to-white/15",
+                label: "Request Equipment",
+                sub: "Browse shoes & brooms by size",
               },
               {
                 href: "/lookup",
                 icon: Eye,
-                title: "My Equipment",
-                desc: "Check what you have",
-                accent: "from-white/20 to-white/10 hover:from-white/25 hover:to-white/15",
+                label: "Look Up My Stuff",
+                sub: "See what your child has out",
               },
-            ].map((card) => (
+            ].map((cta) => (
               <Link
-                key={card.href}
-                href={card.href}
-                className={cn(
-                  "group relative overflow-hidden rounded-xl bg-gradient-to-br backdrop-blur-sm p-5 sm:p-6 text-white transition-all duration-200 hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-0.5 active:translate-y-0",
-                  card.accent
-                )}
+                key={cta.href}
+                href={cta.href}
+                className="group flex items-center gap-3 bg-white rounded-xl px-5 py-4 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
               >
-                <div className="flex items-start gap-4">
-                  <div className="bg-white/15 rounded-lg p-2.5 group-hover:bg-white/20 transition-colors">
-                    <card.icon className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-base mb-0.5">
-                      {card.title}
-                    </div>
-                    <div className="text-white/60 text-sm">{card.desc}</div>
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-white/40 group-hover:text-white/70 group-hover:translate-x-0.5 transition-all mt-1" />
+                <div className="bg-[#911f1f]/10 rounded-lg p-2.5 group-hover:bg-[#911f1f]/15 transition-colors shrink-0">
+                  <cta.icon className="h-5 w-5 text-[#911f1f]" />
                 </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-sm text-[#363839]">
+                    {cta.label}
+                  </div>
+                  <div className="text-xs text-[#78716c]">{cta.sub}</div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-[#d4d4d4] group-hover:text-[#911f1f] transition-colors shrink-0" />
               </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ──── How It Works — Step-by-step guide ──── */}
+      <section className="bg-[#f5f5f5] -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-[1170px] mx-auto">
+          <h2 className="font-display text-lg text-[#363839] mb-5 text-center">
+            How It Works
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            {[
+              {
+                step: "1",
+                title: "Register",
+                desc: "Add your child's name, grade, and shoe size",
+                href: "/register",
+              },
+              {
+                step: "2",
+                title: "Request",
+                desc: "Pick shoes or a broom in your child's size",
+                href: "/request",
+              },
+              {
+                step: "3",
+                title: "Pick Up",
+                desc: "See Scott at the rink — he'll have it ready",
+                href: null,
+              },
+              {
+                step: "4",
+                title: "Return",
+                desc: "Bring it back to Scott at end of season",
+                href: null,
+              },
+            ].map((s) => (
+              <div
+                key={s.step}
+                className="bg-white rounded-xl p-5 text-center relative"
+              >
+                <div className="w-8 h-8 rounded-full bg-[#911f1f] text-white text-sm font-bold flex items-center justify-center mx-auto mb-3">
+                  {s.step}
+                </div>
+                <h3 className="font-semibold text-sm text-[#363839] mb-1">
+                  {s.title}
+                </h3>
+                <p className="text-xs text-[#78716c] leading-relaxed">
+                  {s.desc}
+                </p>
+                {s.href && (
+                  <Link
+                    href={s.href}
+                    className="text-xs text-[#911f1f] font-medium mt-2 inline-flex items-center gap-0.5 hover:underline"
+                  >
+                    Go <ChevronRight className="h-3 w-3" />
+                  </Link>
+                )}
+              </div>
             ))}
           </div>
         </div>
@@ -214,12 +266,12 @@ export default function Dashboard() {
       {/* ──── Quick Search ──── */}
       <form onSubmit={handleSearch}>
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-stone" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#78716c]" />
           <Input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-12 h-13 text-base rounded-xl border-warm-200 bg-white shadow-sm focus:border-burgundy focus:ring-burgundy/20"
+            className="pl-11 h-11 text-sm rounded-xl bg-white border-[#e5e5e5]"
             placeholder="Search by child's name to see their equipment..."
           />
           {searchTerm && (
@@ -236,133 +288,71 @@ export default function Dashboard() {
 
       {/* ──── Low Stock Alert ──── */}
       {lowStockSizes.length > 0 && (
-        <div className="flex items-start gap-3 bg-burgundy-50 border border-burgundy/15 rounded-xl p-4">
-          <AlertTriangle className="h-5 w-5 text-burgundy shrink-0 mt-0.5" />
-          <div>
-            <h3 className="font-semibold text-burgundy text-sm">
-              Low Stock Alert
-            </h3>
-            <p className="text-sm text-burgundy/80 mt-0.5">
+        <div className="flex items-start gap-3 bg-[#fdf2f2] border border-[#911f1f]/15 rounded-xl p-4">
+          <AlertTriangle className="h-4 w-4 text-[#911f1f] shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <span className="font-semibold text-[#911f1f]">Low stock: </span>
+            <span className="text-[#860f29]">
               {lowStockSizes.map((item, i) => (
                 <span key={item!.size}>
-                  <strong>Size {item!.size}</strong> ({item!.available} left,
-                  need {item!.shortage} more)
-                  {i < lowStockSizes.length - 1 ? " · " : ""}
+                  Size {item!.size} ({item!.available} left)
+                  {i < lowStockSizes.length - 1 ? ", " : ""}
                 </span>
               ))}
-            </p>
+            </span>
           </div>
         </div>
       )}
 
-      {/* ──── Stats Bar ──── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {[
-          {
-            label: "Available",
-            value: stats.equipment.available,
-            icon: Package,
-            color: "text-emerald-700",
-            bg: "bg-emerald-50",
-            border: "border-emerald-200",
-          },
-          {
-            label: "Checked Out",
-            value: stats.checkouts.activeCheckouts,
-            icon: CheckCircle,
-            color: "text-amber-700",
-            bg: "bg-amber-50",
-            border: "border-amber-200",
-          },
-          {
-            label: "Shoes",
-            value: stats.equipment.totalShoes,
-            icon: Footprints,
-            color: "text-stone",
-            bg: "bg-white",
-            border: "border-warm-200",
-          },
-          {
-            label: "Brooms",
-            value: stats.equipment.totalBrooms,
-            icon: Brush,
-            color: "text-stone",
-            bg: "bg-white",
-            border: "border-warm-200",
-          },
-        ].map((stat) => (
-          <div
-            key={stat.label}
-            className={cn(
-              "rounded-xl border p-4 flex items-center gap-3",
-              stat.bg,
-              stat.border
-            )}
-          >
-            <stat.icon className={cn("h-5 w-5 shrink-0", stat.color)} />
-            <div>
-              <div className="text-2xl font-bold leading-none">{stat.value}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">
-                {stat.label}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
       {/* ──── Available Equipment ──── */}
       <section>
         <div className="flex items-baseline justify-between mb-4">
-          <h2 className="font-display text-xl text-[#363839]">
-            Available Now
+          <h2 className="font-display text-lg text-[#363839]">
+            Available Equipment
           </h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-burgundy hover:text-burgundy-dark"
-            render={<Link href="/request" />}
+          <Link
+            href="/request"
+            className="text-sm text-[#911f1f] font-medium hover:underline inline-flex items-center gap-1"
           >
-            Request
-            <ArrowRight className="h-3.5 w-3.5 ml-1" />
-          </Button>
+            Request <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Shoes */}
-          <Card className="bg-white border-warm-200">
+          <Card>
             <CardContent className="p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="bg-ice rounded-lg p-2">
-                  <Footprints className="h-4 w-4 text-sky-700" />
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-lg bg-sky-50 flex items-center justify-center">
+                    <Footprints className="h-4 w-4 text-sky-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm text-[#363839]">
+                      Curling Shoes
+                    </h3>
+                    <p className="text-xs text-[#78716c]">
+                      {totalAvailableShoes} pairs available
+                    </p>
+                  </div>
                 </div>
-                <h3 className="font-semibold">Curling Shoes</h3>
-                <Badge
-                  variant="secondary"
-                  className="ml-auto bg-emerald-100 text-emerald-700 text-xs"
-                >
-                  {stats.availableShoesBySize.reduce(
-                    (sum, s) => sum + Number(s.count),
-                    0
-                  )}{" "}
-                  total
-                </Badge>
               </div>
               {stats.availableShoesBySize.length === 0 ? (
-                <p className="text-muted-foreground text-sm py-4 text-center">
-                  No shoes available right now
+                <p className="text-sm text-[#78716c] py-4 text-center">
+                  None available right now
                 </p>
               ) : (
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   {stats.availableShoesBySize.map((item) => (
                     <div
                       key={item.size}
-                      className="flex justify-between items-center py-1.5 px-3 rounded-lg hover:bg-warm-50 transition-colors"
+                      className="flex justify-between items-center py-2 px-3 rounded-lg hover:bg-[#f5f5f5] transition-colors"
                     >
-                      <span className="text-sm font-medium">
+                      <span className="text-sm text-[#444]">
                         Size {item.size}
                       </span>
-                      <span className="text-sm text-emerald-600 font-medium tabular-nums">
-                        {item.count} avail
+                      <span className="text-sm font-medium text-emerald-600 tabular-nums">
+                        {item.count}
                       </span>
                     </div>
                   ))}
@@ -372,40 +362,39 @@ export default function Dashboard() {
           </Card>
 
           {/* Brooms */}
-          <Card className="bg-white border-warm-200">
+          <Card>
             <CardContent className="p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="bg-amber-50 rounded-lg p-2">
-                  <Brush className="h-4 w-4 text-amber-700" />
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center">
+                    <Brush className="h-4 w-4 text-amber-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm text-[#363839]">
+                      Curling Brooms
+                    </h3>
+                    <p className="text-xs text-[#78716c]">
+                      {totalAvailableBrooms} available
+                    </p>
+                  </div>
                 </div>
-                <h3 className="font-semibold">Curling Brooms</h3>
-                <Badge
-                  variant="secondary"
-                  className="ml-auto bg-emerald-100 text-emerald-700 text-xs"
-                >
-                  {stats.availableBroomsBySize.reduce(
-                    (sum, s) => sum + Number(s.count),
-                    0
-                  )}{" "}
-                  total
-                </Badge>
               </div>
               {stats.availableBroomsBySize.length === 0 ? (
-                <p className="text-muted-foreground text-sm py-4 text-center">
-                  No brooms available right now
+                <p className="text-sm text-[#78716c] py-4 text-center">
+                  None available right now
                 </p>
               ) : (
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   {stats.availableBroomsBySize.map((item) => (
                     <div
                       key={item.size || "standard"}
-                      className="flex justify-between items-center py-1.5 px-3 rounded-lg hover:bg-warm-50 transition-colors"
+                      className="flex justify-between items-center py-2 px-3 rounded-lg hover:bg-[#f5f5f5] transition-colors"
                     >
-                      <span className="text-sm font-medium">
+                      <span className="text-sm text-[#444]">
                         {item.size || "Standard"}
                       </span>
-                      <span className="text-sm text-emerald-600 font-medium tabular-nums">
-                        {item.count} avail
+                      <span className="text-sm font-medium text-emerald-600 tabular-nums">
+                        {item.count}
                       </span>
                     </div>
                   ))}
@@ -416,63 +405,55 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* ──── How It Works ──── */}
-      <section className="bg-white rounded-2xl border border-warm-200 overflow-hidden">
-        <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-warm-200">
-          {[
-            {
-              n: "01",
-              icon: Eye,
-              title: "Check Availability",
-              desc: "Browse sizes above or on the Equipment page",
-            },
-            {
-              n: "02",
-              icon: Heart,
-              title: "See Scott at the Rink",
-              desc: "He'll get your child fitted with the right gear",
-            },
-            {
-              n: "03",
-              icon: Shield,
-              title: "Return End of Season",
-              desc: "Or when outgrown — honor system",
-            },
-          ].map((step) => (
-            <div key={step.n} className="p-6 text-center">
-              <span className="font-display text-3xl font-bold text-burgundy/15">
-                {step.n}
-              </span>
-              <step.icon className="h-5 w-5 mx-auto mt-1 mb-2 text-burgundy/60" />
-              <h3 className="font-semibold text-sm mb-1">{step.title}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {step.desc}
-              </p>
+      {/* ──── Quick Stats ──── */}
+      <div className="grid grid-cols-4 gap-3">
+        {[
+          { label: "Available", value: stats.equipment.available, color: "text-emerald-600" },
+          { label: "Checked Out", value: stats.checkouts.activeCheckouts, color: "text-amber-600" },
+          { label: "Shoes", value: stats.equipment.totalShoes, color: "text-[#444]" },
+          { label: "Brooms", value: stats.equipment.totalBrooms, color: "text-[#444]" },
+        ].map((s) => (
+          <div key={s.label} className="text-center py-3">
+            <div className={cn("text-2xl font-bold", s.color)}>{s.value}</div>
+            <div className="text-[11px] text-[#78716c] uppercase tracking-wider mt-0.5">
+              {s.label}
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        ))}
+      </div>
 
-      {/* ──── Honor System ──── */}
-      <div className="flex items-start gap-4 bg-warm-100 rounded-xl p-5 border border-warm-200">
-        <Shield className="h-5 w-5 text-burgundy/60 shrink-0 mt-0.5" />
-        <div className="text-sm">
-          <p className="font-semibold text-warm-800 mb-1.5">
-            Honor System
-          </p>
-          <div className="text-warm-800/70 space-y-0.5">
-            <p>
-              Return at end of season · Report any damage · One pair of shoes +
-              one broom per child · First come, first served
-            </p>
+      {/* ──── Guidelines ──── */}
+      <div className="bg-[#f5f5f5] rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <Shield className="h-4 w-4 text-[#911f1f]" />
+          <h3 className="font-semibold text-sm text-[#363839]">
+            Honor System Guidelines
+          </h3>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm text-[#555]">
+          <div className="flex items-start gap-2">
+            <CircleDot className="h-3 w-3 text-[#911f1f] shrink-0 mt-1" />
+            <span>Return equipment at end of season or when outgrown</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <CircleDot className="h-3 w-3 text-[#911f1f] shrink-0 mt-1" />
+            <span>Report any damage — accidents happen, just let us know</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <CircleDot className="h-3 w-3 text-[#911f1f] shrink-0 mt-1" />
+            <span>One pair of shoes and one broom per child</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <CircleDot className="h-3 w-3 text-[#911f1f] shrink-0 mt-1" />
+            <span>First come, first served — check availability first</span>
           </div>
         </div>
       </div>
 
-      {/* ──── Coordinator Tools ──── */}
-      <section>
+      {/* ──── Coordinator Section ──── */}
+      <section className="border-t border-[#e5e5e5] pt-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display text-xl text-[#363839]">
+          <h2 className="font-semibold text-sm text-[#78716c] uppercase tracking-wider">
             Coordinator
           </h2>
           {authenticated ? (
@@ -480,97 +461,69 @@ export default function Dashboard() {
               variant="ghost"
               size="sm"
               onClick={logout}
-              className="text-muted-foreground"
+              className="text-[#78716c] text-xs"
             >
-              <LogOut className="h-4 w-4 mr-1" />
+              <LogOut className="h-3.5 w-3.5 mr-1" />
               Logout
             </Button>
           ) : (
             <Button
               variant="ghost"
               size="sm"
-              className="text-muted-foreground"
+              className="text-[#78716c] text-xs"
               render={<Link href="/admin" />}
             >
-              <LogIn className="h-4 w-4 mr-1" />
+              <LogIn className="h-3.5 w-3.5 mr-1" />
               Login
             </Button>
           )}
         </div>
 
         {authenticated ? (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Quick Actions */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
               {[
-                {
-                  href: "/equipment",
-                  icon: Plus,
-                  label: "Equipment",
-                  color: "text-blue-600",
-                  bg: "bg-blue-50",
-                },
-                {
-                  href: "/kids",
-                  icon: Users,
-                  label: "Kids",
-                  color: "text-violet-600",
-                  bg: "bg-violet-50",
-                },
-                {
-                  href: "/checkouts",
-                  icon: CheckCircle,
-                  label: "Checkouts",
-                  color: "text-emerald-600",
-                  bg: "bg-emerald-50",
-                },
-                {
-                  href: "/print",
-                  icon: Printer,
-                  label: "Print",
-                  color: "text-amber-600",
-                  bg: "bg-amber-50",
-                },
-                {
-                  href: "/waitlist",
-                  icon: ClipboardList,
-                  label: "Waitlist",
-                  color: "text-rose-600",
-                  bg: "bg-rose-50",
-                },
-              ].map((action) => (
-                <Link key={action.href} href={action.href}>
-                  <div className="group bg-white border border-warm-200 rounded-xl p-4 text-center hover:shadow-md hover:border-warm-300 transition-all">
+                { href: "/equipment", icon: Package, label: "Equipment", color: "bg-blue-50 text-blue-600" },
+                { href: "/kids", icon: Users, label: "Kids", color: "bg-violet-50 text-violet-600" },
+                { href: "/checkouts", icon: CheckCircle, label: "Checkouts", color: "bg-emerald-50 text-emerald-600" },
+                { href: "/match", icon: Zap, label: "Match", color: "bg-amber-50 text-amber-600" },
+                { href: "/print", icon: Printer, label: "Print", color: "bg-gray-100 text-gray-600" },
+                { href: "/waitlist", icon: ClipboardList, label: "Waitlist", color: "bg-rose-50 text-rose-600" },
+              ].map((a) => (
+                <Link key={a.href} href={a.href}>
+                  <div className="bg-white border border-[#e5e5e5] rounded-xl p-3 text-center hover:shadow-md transition-all group">
                     <div
                       className={cn(
-                        "w-9 h-9 rounded-lg flex items-center justify-center mx-auto mb-2",
-                        action.bg
+                        "w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-1.5",
+                        a.color
                       )}
                     >
-                      <action.icon className={cn("h-4 w-4", action.color)} />
+                      <a.icon className="h-3.5 w-3.5" />
                     </div>
-                    <span className="text-xs font-medium">{action.label}</span>
+                    <span className="text-[11px] font-medium text-[#555]">
+                      {a.label}
+                    </span>
                   </div>
                 </Link>
               ))}
             </div>
 
-            {/* Size Demand + Recent Activity side by side on desktop */}
+            {/* Demand + Activity side by side */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Size Demand */}
-              <Card className="bg-white border-warm-200">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-semibold text-[#78716c] uppercase tracking-wider">
                     Size Demand vs Supply
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {stats.kidsSizeDistribution.length === 0 ? (
-                    <p className="text-muted-foreground text-sm py-4 text-center">
+                    <p className="text-sm text-[#78716c] py-4 text-center">
                       No kids registered with shoe sizes yet.
                     </p>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-2.5">
                       {stats.kidsSizeDistribution.map((sizeInfo) => {
                         const available =
                           stats.availableShoesBySize.find(
@@ -584,28 +537,24 @@ export default function Dashboard() {
                         );
                         return (
                           <div key={sizeInfo.shoeSize}>
-                            <div className="flex items-center justify-between text-sm mb-1">
-                              <span className="font-medium tabular-nums">
+                            <div className="flex items-center justify-between text-xs mb-1">
+                              <span className="font-medium text-[#444] tabular-nums">
                                 Size {sizeInfo.shoeSize}
                               </span>
                               <span
                                 className={cn(
-                                  "text-xs font-medium",
-                                  needsMore
-                                    ? "text-destructive"
-                                    : "text-emerald-600"
+                                  "font-medium",
+                                  needsMore ? "text-[#860f29]" : "text-emerald-600"
                                 )}
                               >
                                 {available}/{needed}
                               </span>
                             </div>
-                            <div className="h-1.5 bg-warm-100 rounded-full overflow-hidden">
+                            <div className="h-1.5 bg-[#f5f5f5] rounded-full overflow-hidden">
                               <div
                                 className={cn(
                                   "h-full rounded-full transition-all duration-500",
-                                  needsMore
-                                    ? "bg-destructive/60"
-                                    : "bg-emerald-500"
+                                  needsMore ? "bg-[#860f29]/50" : "bg-emerald-400"
                                 )}
                                 style={{ width: `${ratio}%` }}
                               />
@@ -618,16 +567,15 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
 
-              {/* Recent Activity */}
-              <Card className="bg-white border-warm-200">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-semibold text-[#78716c] uppercase tracking-wider">
                     Recent Activity
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {stats.recentActivity.length === 0 ? (
-                    <p className="text-muted-foreground text-sm py-4 text-center">
+                    <p className="text-sm text-[#78716c] py-4 text-center">
                       No activity yet.
                     </p>
                   ) : (
@@ -635,82 +583,58 @@ export default function Dashboard() {
                       {stats.recentActivity.slice(0, 6).map((a) => (
                         <div
                           key={a.id}
-                          className="flex items-center justify-between py-2.5 border-b border-warm-100 last:border-0"
+                          className="flex items-center justify-between py-2 border-b border-[#f5f5f5] last:border-0"
                         >
-                          <div className="flex items-center gap-2 text-sm min-w-0">
+                          <div className="flex items-center gap-2 text-xs min-w-0">
                             <div
                               className={cn(
                                 "w-1.5 h-1.5 rounded-full shrink-0",
-                                a.returnedAt
-                                  ? "bg-emerald-500"
-                                  : "bg-amber-500"
+                                a.returnedAt ? "bg-emerald-400" : "bg-amber-400"
                               )}
                             />
-                            <span className="font-medium truncate">
+                            <span className="font-medium text-[#444] truncate">
                               {a.kidName}
                             </span>
-                            <span className="text-muted-foreground text-xs hidden sm:inline">
+                            <span className="text-[#78716c] hidden sm:inline">
                               {a.returnedAt ? "returned" : "borrowed"}{" "}
-                              <span className="capitalize">
-                                {a.equipmentType}
-                              </span>
-                              {a.equipmentSize
-                                ? ` (${a.equipmentSize})`
-                                : ""}
+                              <span className="capitalize">{a.equipmentType}</span>
+                              {a.equipmentSize ? ` (${a.equipmentSize})` : ""}
                             </span>
                           </div>
-                          <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
+                          <span className="text-[10px] text-[#78716c] whitespace-nowrap ml-2 tabular-nums">
                             {formatDate(a.returnedAt || a.checkedOutAt)}
                           </span>
                         </div>
                       ))}
                     </div>
                   )}
-                  <Separator className="my-3 bg-warm-100" />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs w-full text-muted-foreground hover:text-foreground"
-                    render={<Link href="/checkouts" />}
-                  >
-                    View all checkouts
-                    <ArrowRight className="h-3 w-3 ml-1" />
-                  </Button>
+                  <div className="pt-3">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs w-full text-[#78716c]"
+                      render={<Link href="/checkouts" />}
+                    >
+                      View all checkouts
+                      <ArrowRight className="h-3 w-3 ml-1" />
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </div>
           </div>
         ) : (
-          <div className="bg-white border border-warm-200 rounded-xl py-10 text-center">
-            <Lock className="h-6 w-6 text-muted-foreground/40 mx-auto mb-3" />
-            <p className="text-muted-foreground text-sm mb-4">
+          <div className="bg-white border border-[#e5e5e5] rounded-xl py-8 text-center">
+            <p className="text-sm text-[#78716c] mb-3">
               Log in to access coordinator tools.
             </p>
             <Button size="sm" render={<Link href="/admin" />}>
-              <LogIn className="h-4 w-4 mr-1" />
+              <LogIn className="h-3.5 w-3.5 mr-1" />
               Coordinator Login
             </Button>
           </div>
         )}
       </section>
     </div>
-  );
-}
-
-function Lock({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </svg>
   );
 }
