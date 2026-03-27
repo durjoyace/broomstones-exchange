@@ -1,42 +1,42 @@
 export function Footer() {
   return (
-    <footer className="mt-auto border-t border-warm-200 bg-warm-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 bg-burgundy/10 rounded flex items-center justify-center">
-              <span className="text-burgundy text-xs font-bold">B</span>
-            </div>
-            <span className="text-foreground/70 font-medium">
-              Broomstones Curling Club
-            </span>
-            <span className="text-muted-foreground/50 hidden sm:inline">
-              &mdash;
-            </span>
-            <span className="text-muted-foreground text-xs hidden sm:inline">
-              Junior Curling Program
-            </span>
-          </div>
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <span>
-              Coordinator:{" "}
-              <a
-                href="mailto:Scott.Price@broomstones.org"
-                className="text-burgundy hover:underline"
-              >
-                Scott Price
-              </a>
-            </span>
-            <span className="text-muted-foreground/30">|</span>
+    <footer className="bg-[#363839] mt-auto">
+      <div className="max-w-[1170px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center space-y-2">
+          <p className="text-[#d6d6d6] text-sm font-semibold">
+            Broomstones Curling Club
+          </p>
+          <p className="text-[#b0b0b0] text-sm">
+            Junior Curling Program &mdash; Equipment Exchange
+          </p>
+          <p className="text-[#b0b0b0] text-xs">
+            Equipment Coordinator: Scott Price &ndash;{" "}
+            <a
+              href="mailto:Scott.Price@broomstones.org"
+              className="text-[#d6d6d6] hover:text-[#f0f0f0] transition-colors duration-[400ms]"
+            >
+              Scott.Price@broomstones.org
+            </a>
+          </p>
+          <p className="text-[#b0b0b0] text-xs pt-2">
+            <a
+              href="https://broomstones.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#d6d6d6] hover:text-[#f0f0f0] transition-colors duration-[400ms]"
+            >
+              broomstones.com
+            </a>
+            <span className="mx-2 text-[#555]">&middot;</span>
             <a
               href="https://juniors.broomstones.org"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-foreground transition-colors"
+              className="text-[#d6d6d6] hover:text-[#f0f0f0] transition-colors duration-[400ms]"
             >
               juniors.broomstones.org
             </a>
-          </div>
+          </p>
         </div>
       </div>
     </footer>

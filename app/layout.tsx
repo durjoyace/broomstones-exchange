@@ -1,20 +1,14 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
-import { Source_Serif_4 } from "next/font/google";
+import { Open_Sans } from "next/font/google";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const openSans = Open_Sans({
+  variable: "--font-open-sans",
   subsets: ["latin"],
-});
-
-const sourceSerif = Source_Serif_4({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["400", "600", "700", "900"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -31,11 +25,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${sourceSerif.variable} antialiased min-h-screen flex flex-col`}
-        style={{ backgroundColor: "#faf8f5" }}
+        className={`${openSans.variable} antialiased min-h-screen flex flex-col`}
       >
         <Header />
-        <main className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex-1">
+        <main className="max-w-[1170px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex-1">
           {children}
         </main>
         <Footer />
