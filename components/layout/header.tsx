@@ -20,26 +20,20 @@ export function Header() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="bg-[#911f1f]">
-      <div className="max-w-[1170px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-[70px] sm:h-[90px]">
-          {/* Logo area — matching broomstones.com layout */}
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex flex-col leading-tight">
-              <span className="font-display text-white text-lg sm:text-xl">
-                Broomstones
-              </span>
-              <span className="text-white/60 text-[11px] sm:text-xs tracking-wide uppercase">
-                Equipment Exchange
-              </span>
+    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-black/5">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="flex items-center justify-between h-14">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-[#911f1f] flex items-center justify-center">
+              <span className="text-white text-xs font-bold">B</span>
             </div>
+            <span className="text-[#0a0a0a] font-semibold text-sm tracking-tight">
+              Broomstones
+            </span>
           </Link>
 
-          {/* Desktop nav — matching broomstones.com nav style */}
-          <nav
-            className="hidden sm:flex items-center gap-0"
-            aria-label="Main"
-          >
+          {/* Desktop */}
+          <nav className="hidden sm:flex items-center gap-1" aria-label="Main">
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
@@ -48,10 +42,10 @@ export function Header() {
                   key={item.name}
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-1.5 px-4 py-2 text-sm font-semibold transition-colors duration-[400ms]",
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors",
                     isActive
-                      ? "text-white"
-                      : "text-[#bdbdbd] hover:text-white"
+                      ? "bg-[#f4f4f5] text-[#0a0a0a]"
+                      : "text-[#71717a] hover:text-[#0a0a0a] hover:bg-[#f4f4f5]"
                   )}
                 >
                   <Icon className="h-3.5 w-3.5" />
@@ -61,23 +55,17 @@ export function Header() {
             })}
           </nav>
 
-          {/* Mobile nav */}
+          {/* Mobile */}
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger className="sm:hidden">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/10 h-10 w-10"
-              >
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Open menu</span>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Menu className="h-4 w-4" />
+                <span className="sr-only">Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72">
-              <SheetTitle className="text-lg font-light text-[#363839]">
-                Navigation
-              </SheetTitle>
-              <nav className="flex flex-col gap-1 mt-6" aria-label="Mobile">
+            <SheetContent side="right" className="w-64 bg-white">
+              <SheetTitle className="text-sm font-semibold">Menu</SheetTitle>
+              <nav className="flex flex-col gap-0.5 mt-6" aria-label="Mobile">
                 {navigation.map((item) => {
                   const Icon = item.icon;
                   const isActive = pathname === item.href;
@@ -87,10 +75,10 @@ export function Header() {
                       href={item.href}
                       onClick={() => setOpen(false)}
                       className={cn(
-                        "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-colors duration-[400ms]",
+                        "flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                         isActive
-                          ? "bg-[#911f1f]/8 text-[#911f1f]"
-                          : "text-[#555555] hover:bg-[#f5f5f5]"
+                          ? "bg-[#f4f4f5] text-[#0a0a0a]"
+                          : "text-[#71717a] hover:text-[#0a0a0a] hover:bg-[#f4f4f5]"
                       )}
                     >
                       <Icon className="h-4 w-4" />

@@ -1,26 +1,19 @@
 import type { Metadata } from "next";
-import { DM_Sans, DM_Serif_Display } from "next/font/google";
+import { Inter } from "next/font/google";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
-const dmSerif = DM_Serif_Display({
-  variable: "--font-dm-serif",
-  subsets: ["latin"],
-  weight: ["400"],
 });
 
 export const metadata: Metadata = {
-  title: "Little Rockers Equipment Exchange | Broomstones",
+  title: "Equipment Exchange | Broomstones",
   description:
-    "Free shoes and brooms lending for kids in the Little Rockers curling program at Broomstones",
+    "Free shoes and brooms for kids in the Little Rockers curling program at Broomstones",
 };
 
 export default function RootLayout({
@@ -31,10 +24,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${dmSans.variable} ${dmSerif.variable} antialiased min-h-screen flex flex-col`}
+        className={`${inter.variable} antialiased min-h-screen flex flex-col bg-[#fafafa]`}
       >
         <Header />
-        <main className="max-w-[1170px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex-1">
+        <main className="max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-10 flex-1">
           {children}
         </main>
         <Footer />

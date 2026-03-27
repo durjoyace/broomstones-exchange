@@ -6,46 +6,43 @@
 
 @layer base {
   :root {
-    --background: #ffffff;
-    --foreground: #444444;
+    --background: #fafafa;
+    --foreground: #0a0a0a;
     --card: #ffffff;
-    --card-foreground: #444444;
+    --card-foreground: #0a0a0a;
     --popover: #ffffff;
-    --popover-foreground: #444444;
-    --primary: #911f1f;
-    --primary-foreground: #ffffff;
-    --secondary: #f5f5f5;
-    --secondary-foreground: #363839;
-    --muted: #f5f5f5;
-    --muted-foreground: #78716c;
-    --accent: #f5f5f5;
-    --accent-foreground: #363839;
-    --destructive: #860f29;
-    --destructive-foreground: #860f29;
-    --border: #e5e5e5;
-    --input: #ced4da;
-    --ring: #911f1f;
+    --popover-foreground: #0a0a0a;
+    --primary: #0a0a0a;
+    --primary-foreground: #fafafa;
+    --secondary: #f4f4f5;
+    --secondary-foreground: #18181b;
+    --muted: #f4f4f5;
+    --muted-foreground: #71717a;
+    --accent: #f4f4f5;
+    --accent-foreground: #18181b;
+    --destructive: #dc2626;
+    --destructive-foreground: #dc2626;
+    --border: #e4e4e7;
+    --input: #e4e4e7;
+    --ring: #0a0a0a;
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
-    --radius: 1rem;
-    --sidebar: #f5f5f5;
-    --sidebar-foreground: #444444;
-    --sidebar-primary: #363839;
-    --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #f5f5f5;
-    --sidebar-accent-foreground: #363839;
-    --sidebar-border: #e5e5e5;
-    --sidebar-ring: #e5e5e5;
+    --radius: 0.75rem;
+    --sidebar: #fafafa;
+    --sidebar-foreground: #0a0a0a;
+    --sidebar-primary: #0a0a0a;
+    --sidebar-primary-foreground: #fafafa;
+    --sidebar-accent: #f4f4f5;
+    --sidebar-accent-foreground: #18181b;
+    --sidebar-border: #e4e4e7;
+    --sidebar-ring: #e4e4e7;
 
-    /* Broomstones brand tokens */
+    /* Brand */
     --broomstones-burgundy: #911f1f;
     --broomstones-burgundy-dark: #7a1a1a;
-    --broomstones-burgundy-accent: #860f29;
-    --broomstones-grey: #363839;
-    --broomstones-grey-light: #78716c;
   }
 
   * {
@@ -53,8 +50,8 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-size: 15px;
-    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   html {
     @apply font-sans;
@@ -101,55 +98,19 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-
-  /* Brand color utilities */
   --color-burgundy: var(--broomstones-burgundy);
   --color-burgundy-dark: var(--broomstones-burgundy-dark);
-  --color-burgundy-accent: var(--broomstones-burgundy-accent);
-  --color-grey: var(--broomstones-grey);
-  --color-grey-light: var(--broomstones-grey-light);
-
-  /* DM Sans for body, DM Serif Display for display headings */
-  --font-sans: var(--font-dm-sans), "DM Sans", system-ui, sans-serif;
+  --font-sans: var(--font-inter), "Inter", system-ui, sans-serif;
   --font-mono: ui-monospace, monospace;
-  --font-heading: var(--font-dm-sans), "DM Sans", system-ui, sans-serif;
-  --font-display: var(--font-dm-serif), "DM Serif Display", Georgia, serif;
-
-  /* Extended palette */
-  --color-warm-50: #fafafa;
-  --color-warm-100: #f5f5f5;
-  --color-warm-200: #e5e5e5;
-  --color-warm-300: #d4d4d4;
-  --color-warm-800: #363839;
-  --color-warm-900: #262626;
-  --color-burgundy-light: #b83232;
-  --color-burgundy-50: #fdf2f2;
-  --color-burgundy-100: #fbe5e5;
-  --color-ice: #e8f4f8;
-  --color-ice-dark: #b8dbe6;
-  --color-stone: #78716c;
 }
 
-/* Serif display font for hero headings */
-.font-display {
-  font-family: var(--font-dm-serif), "DM Serif Display", Georgia, serif;
-}
-
-/* Broomstones.com card shadow pattern */
-.broomstones-card {
-  background: white;
-  border-radius: 1rem;
-  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.12);
-}
-
-/* Smooth page transitions */
 @layer base {
   main {
-    animation: fadeIn 0.3s ease-out;
+    animation: fadeUp 0.4s ease-out;
   }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
