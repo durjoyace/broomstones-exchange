@@ -26,7 +26,7 @@ export function Header() {
           {/* Logo area — matching broomstones.com layout */}
           <Link href="/" className="flex items-center gap-3">
             <div className="flex flex-col leading-tight">
-              <span className="text-white font-semibold text-lg sm:text-xl tracking-tight">
+              <span className="font-display text-white text-lg sm:text-xl">
                 Broomstones
               </span>
               <span className="text-white/60 text-[11px] sm:text-xs tracking-wide uppercase">

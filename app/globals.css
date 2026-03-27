@@ -7,11 +7,11 @@
 @layer base {
   :root {
     --background: #ffffff;
-    --foreground: #555555;
+    --foreground: #444444;
     --card: #ffffff;
-    --card-foreground: #555555;
+    --card-foreground: #444444;
     --popover: #ffffff;
-    --popover-foreground: #555555;
+    --popover-foreground: #444444;
     --primary: #911f1f;
     --primary-foreground: #ffffff;
     --secondary: #f5f5f5;
@@ -32,7 +32,7 @@
     --chart-5: oklch(0.269 0 0);
     --radius: 1rem;
     --sidebar: #f5f5f5;
-    --sidebar-foreground: #555555;
+    --sidebar-foreground: #444444;
     --sidebar-primary: #363839;
     --sidebar-primary-foreground: #ffffff;
     --sidebar-accent: #f5f5f5;
@@ -40,13 +40,12 @@
     --sidebar-border: #e5e5e5;
     --sidebar-ring: #e5e5e5;
 
-    /* Broomstones brand tokens (from broomstones.com) */
+    /* Broomstones brand tokens */
     --broomstones-burgundy: #911f1f;
     --broomstones-burgundy-dark: #7a1a1a;
     --broomstones-burgundy-accent: #860f29;
     --broomstones-grey: #363839;
     --broomstones-grey-light: #78716c;
-    --broomstones-body: #555555;
   }
 
   * {
@@ -54,22 +53,12 @@
   }
   body {
     @apply bg-background text-foreground;
-    color: #555555;
     font-size: 15px;
     line-height: 1.6;
   }
   html {
     @apply font-sans;
   }
-
-  /* Matching broomstones.com heading weights (light/elegant) */
-  h1, h2, h3 {
-    color: #363839;
-    font-weight: 300;
-  }
-  h1 { font-size: 1.5rem; }
-  h2 { font-size: 1.375rem; }
-  h3 { font-size: 1.25rem; }
 }
 
 @theme inline {
@@ -120,12 +109,13 @@
   --color-grey: var(--broomstones-grey);
   --color-grey-light: var(--broomstones-grey-light);
 
-  --font-sans: var(--font-open-sans), "Open Sans", system-ui, sans-serif;
+  /* DM Sans for body, DM Serif Display for display headings */
+  --font-sans: var(--font-dm-sans), "DM Sans", system-ui, sans-serif;
   --font-mono: ui-monospace, monospace;
-  --font-heading: var(--font-open-sans), "Open Sans", system-ui, sans-serif;
-  --font-display: var(--font-open-sans), "Open Sans", system-ui, sans-serif;
+  --font-heading: var(--font-dm-sans), "DM Sans", system-ui, sans-serif;
+  --font-display: var(--font-dm-serif), "DM Serif Display", Georgia, serif;
 
-  /* Extended palette matching broomstones.com */
+  /* Extended palette */
   --color-warm-50: #fafafa;
   --color-warm-100: #f5f5f5;
   --color-warm-200: #e5e5e5;
@@ -140,10 +130,9 @@
   --color-stone: #78716c;
 }
 
-/* Display font utility */
+/* Serif display font for hero headings */
 .font-display {
-  font-family: var(--font-open-sans), "Open Sans", system-ui, sans-serif;
-  font-weight: 300;
+  font-family: var(--font-dm-serif), "DM Serif Display", Georgia, serif;
 }
 
 /* Broomstones.com card shadow pattern */

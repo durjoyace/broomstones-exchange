@@ -152,7 +152,7 @@ export default function Dashboard() {
               Little Rockers Program
             </span>
           </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-light text-white leading-tight mb-3">
+          <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl text-white leading-tight mb-3">
             Equipment Exchange
           </h1>
           <p className="text-white/75 text-lg max-w-xl mb-8">
@@ -313,7 +313,7 @@ export default function Dashboard() {
       {/* ──── Available Equipment ──── */}
       <section>
         <div className="flex items-baseline justify-between mb-4">
-          <h2 className="text-xl font-light text-[#363839]">
+          <h2 className="font-display text-xl text-[#363839]">
             Available Now
           </h2>
           <Button
@@ -472,7 +472,7 @@ export default function Dashboard() {
       {/* ──── Coordinator Tools ──── */}
       <section>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-light text-[#363839]">
+          <h2 className="font-display text-xl text-[#363839]">
             Coordinator
           </h2>
           {authenticated ? (
