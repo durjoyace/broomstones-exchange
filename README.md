@@ -69,7 +69,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ### Security
 - Signed cookies (HMAC-SHA256) — no forgeable auth
-- Middleware-enforced protection for coordinator pages **and API routes**
+- Proxy-enforced protection for coordinator pages **and API routes**
 - Parent identity matching for requests, waitlists, and equipment lookup
 - Public stats omit child-level activity and responses are never shared-cacheable
 - Rate limiting on login (5 attempts / 15 minutes)
