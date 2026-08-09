@@ -125,16 +125,18 @@ export function Header() {
         </div>
 
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger className="md:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-11 rounded-full text-white hover:bg-white/10 hover:text-white"
-            >
-              <Menu className="size-5" />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </SheetTrigger>
+          <SheetTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-11 rounded-full text-white hover:bg-white/10 hover:text-white md:hidden"
+              >
+                <Menu className="size-5" />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            }
+          />
           <SheetContent side="right" className="w-[min(22rem,90vw)] bg-[#F6F7F8] p-6">
             <SheetTitle className="text-left">
               <Image
