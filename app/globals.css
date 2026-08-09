@@ -6,45 +6,45 @@
 
 @layer base {
   :root {
-    --background: #f2f7f9;
-    --foreground: #15242b;
+    --background: #f6f7f8;
+    --foreground: #2c2e35;
     --card: #ffffff;
-    --card-foreground: #15242b;
+    --card-foreground: #2c2e35;
     --popover: #ffffff;
-    --popover-foreground: #15242b;
-    --primary: #751c2b;
+    --popover-foreground: #2c2e35;
+    --primary: #bc1f25;
     --primary-foreground: #ffffff;
-    --secondary: #e6f0f4;
-    --secondary-foreground: #153b4d;
-    --muted: #eaf1f4;
-    --muted-foreground: #5d7078;
-    --accent: #dcebf0;
-    --accent-foreground: #153b4d;
-    --destructive: #b42332;
+    --secondary: #e8ecee;
+    --secondary-foreground: #2c2e35;
+    --muted: #eef1f2;
+    --muted-foreground: #5b6870;
+    --accent: #f4e4e5;
+    --accent-foreground: #99191e;
+    --destructive: #bc1f25;
     --destructive-foreground: #ffffff;
-    --border: #cfdee3;
-    --input: #c5d6dc;
-    --ring: #2480a8;
-    --chart-1: #751c2b;
-    --chart-2: #2480a8;
-    --chart-3: #e5b94a;
-    --chart-4: #2e9a72;
-    --chart-5: #5d7078;
-    --radius: 0.875rem;
-    --sidebar: #f2f7f9;
-    --sidebar-foreground: #15242b;
-    --sidebar-primary: #751c2b;
+    --border: #d9dee1;
+    --input: #c9d0d4;
+    --ring: #bc1f25;
+    --chart-1: #bc1f25;
+    --chart-2: #5b6870;
+    --chart-3: #2c2e35;
+    --chart-4: #8c979d;
+    --chart-5: #d9dee1;
+    --radius: 0.75rem;
+    --sidebar: #f6f7f8;
+    --sidebar-foreground: #2c2e35;
+    --sidebar-primary: #bc1f25;
     --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #e6f0f4;
-    --sidebar-accent-foreground: #153b4d;
-    --sidebar-border: #cfdee3;
-    --sidebar-ring: #2480a8;
+    --sidebar-accent: #f4e4e5;
+    --sidebar-accent-foreground: #99191e;
+    --sidebar-border: #d9dee1;
+    --sidebar-ring: #bc1f25;
 
-    --broomstones-burgundy: #751c2b;
-    --broomstones-burgundy-dark: #59141f;
-    --ice-blue: #2480a8;
-    --ice-pale: #e6f0f4;
-    --button-yellow: #e5b94a;
+    --broomstones-red: #bc1f25;
+    --broomstones-red-dark: #99191e;
+    --broomstones-rock: #5b6870;
+    --broomstones-charcoal: #2c2e35;
+    --ice-pale: #e8ecee;
   }
 
   * {
@@ -58,19 +58,16 @@
   body {
     @apply bg-background text-foreground;
     background-image:
-      linear-gradient(rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.58)),
-      repeating-linear-gradient(
-        105deg,
-        transparent 0 38px,
-        rgba(36, 128, 168, 0.035) 39px 40px
-      );
+      radial-gradient(circle at 100% 0%, rgba(188, 31, 37, 0.045) 0 13rem, transparent 13.1rem),
+      radial-gradient(circle at 100% 0%, transparent 0 18rem, rgba(91, 104, 112, 0.045) 18.1rem 18.25rem, transparent 18.35rem),
+      linear-gradient(rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.42));
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   ::selection {
-    background: #d6e9ef;
-    color: #59141f;
+    background: #f1c9cb;
+    color: #2c2e35;
   }
 
   :focus-visible {
@@ -118,13 +115,13 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  --color-burgundy: var(--broomstones-burgundy);
-  --color-burgundy-dark: var(--broomstones-burgundy-dark);
-  --color-ice-blue: var(--ice-blue);
+  --color-burgundy: var(--broomstones-red);
+  --color-burgundy-dark: var(--broomstones-red-dark);
+  --color-ice-blue: var(--broomstones-rock);
   --color-ice-pale: var(--ice-pale);
-  --color-button-yellow: var(--button-yellow);
+  --color-button-yellow: var(--broomstones-red);
   --font-sans: var(--font-dm-sans), system-ui, sans-serif;
-  --font-display: var(--font-archivo-black), Impact, sans-serif;
+  --font-display: var(--font-barlow-condensed), "Arial Narrow", sans-serif;
   --font-mono: ui-monospace, monospace;
 }
 
@@ -136,11 +133,11 @@
   transform: translateY(-160%);
   border-radius: 999px;
   background: #ffffff;
-  color: #59141f;
+  color: #99191e;
   padding: 0.65rem 1rem;
   font-size: 0.875rem;
   font-weight: 700;
-  box-shadow: 0 8px 30px rgba(21, 36, 43, 0.18);
+  box-shadow: 0 8px 30px rgba(44, 46, 53, 0.2);
 }
 
 .skip-link:focus {
@@ -148,7 +145,7 @@
 }
 
 .font-display {
-  font-family: var(--font-archivo-black), Impact, sans-serif;
+  font-family: var(--font-barlow-condensed), "Arial Narrow", sans-serif;
 }
 
 @media (prefers-reduced-motion: no-preference) {
