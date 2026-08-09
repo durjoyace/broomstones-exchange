@@ -38,9 +38,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html
+      lang="en"
+      className={`${dmSans.variable} ${barlowCondensed.variable} scroll-smooth`}
+    >
       <body
-        className={`${dmSans.variable} ${barlowCondensed.variable} min-h-screen flex flex-col antialiased`}
+        className="min-h-screen flex flex-col antialiased"
       >
         <a className="skip-link" href="#main-content">
           Skip to content
