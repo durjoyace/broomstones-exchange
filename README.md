@@ -16,7 +16,7 @@ Parents register their kids, browse available equipment, and request shoes or br
 
 ### Prerequisites
 
-- Node.js 20.9+
+- Node.js 24 LTS
 - A Neon PostgreSQL database
 
 ### Setup
@@ -98,7 +98,7 @@ lib/
   validations/          # Zod schemas
   auth.ts               # Cookie signing, rate limiting
   constants.ts          # Shared enums and options
-middleware.ts           # Route protection
+proxy.ts                # Route and API protection
 ```
 
 ## Scripts
