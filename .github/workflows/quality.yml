@@ -1,17 +1,20 @@
-name: Dependency refresh
+name: Quality
 
 on:
   pull_request:
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
 
 concurrency:
-  group: dependency-refresh-${{ github.ref }}
+  group: quality-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  generate-and-verify:
+  lint-and-build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -28,30 +31,14 @@ jobs:
           node-version: 24
           cache: npm
 
-      - name: Install current dependencies
+      - name: Install dependencies
         run: npm ci
 
-      - name: Resolve patched production dependencies
-        run: |
-          npm install next@16.3.0 eslint-config-next@16.3.0 drizzle-orm@^0.45.2
-          npm install --save-dev shadcn@^4.1.0
-          npm audit fix --omit=dev
-          npm audit --omit=dev --audit-level=high
-          npm install
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Lint
         run: npm run lint -- --max-warnings=0
 
       - name: Build
         run: npm run build
-
-      - name: Emit generated manifests
-        run: |
-          echo "::group::GENERATED_PACKAGE_JSON"
-          base64 -w0 package.json
-          echo
-          echo "::endgroup::"
-          echo "::group::GENERATED_PACKAGE_LOCK"
-          base64 -w0 package-lock.json
-          echo
-          echo "::endgroup::"
