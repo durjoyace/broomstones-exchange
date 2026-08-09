@@ -1,44 +1,44 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export function useAuth(requireAuth: boolean = true) {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
-      const res = await fetch('/api/auth');
-      const data = await res.json();
+      const response = await fetch("/api/auth");
+      const data = await response.json();
       setAuthenticated(data.authenticated);
 
       if (requireAuth && !data.authenticated) {
-        router.push('/admin');
+        router.push("/admin");
       }
     } catch {
       setAuthenticated(false);
       if (requireAuth) {
-        router.push('/admin');
+        router.push("/admin");
       }
     } finally {
       setLoading(false);
     }
-  };
+  }, [requireAuth, router]);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   const logout = async () => {
     try {
-      await fetch('/api/auth', { method: 'DELETE' });
+      await fetch("/api/auth", { method: "DELETE" });
       setAuthenticated(false);
-      router.push('/');
+      router.push("/");
       router.refresh();
     } catch {
-      console.error('Logout failed');
+      console.error("Logout failed");
     }
   };
 
