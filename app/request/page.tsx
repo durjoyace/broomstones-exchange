@@ -1,365 +1,479 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
+  AlertTriangle,
   ArrowLeft,
+  ArrowRight,
+  Brush,
   CheckCircle2,
   ClipboardList,
   Footprints,
-  Brush,
+  LockKeyhole,
+  MapPin,
+  PackageCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
-type Kid = { id: number; name: string; shoeSize?: string | null };
-type SizeCount = { size: string; count: number };
+type SizeCount = { size: string | null; count: number };
+
+const initialForm = {
+  child_name: "",
+  parent_email: "",
+  equipment_type: "shoes" as "shoes" | "broom",
+  size: "",
+  notes: "",
+};
 
 export default function RequestPage() {
-  const [kids, setKids] = useState<Kid[]>([]);
-  const [available, setAvailable] = useState<{ shoes: SizeCount[]; brooms: SizeCount[] }>({
-    shoes: [],
-    brooms: [],
-  });
+  const [available, setAvailable] = useState<{
+    shoes: SizeCount[];
+    brooms: SizeCount[];
+  }>({ shoes: [], brooms: [] });
   const [loading, setLoading] = useState(true);
-  const [formData, setFormData] = useState({
-    kid_id: "",
-    equipment_type: "shoes",
-    size: "",
-    notes: "",
-  });
+  const [loadError, setLoadError] = useState(false);
+  const [formData, setFormData] = useState(initialForm);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [joinedWaitlist, setJoinedWaitlist] = useState(false);
 
   useEffect(() => {
-    Promise.all([fetch("/api/kids"), fetch("/api/stats")])
-      .then(([kidsRes, statsRes]) =>
-        Promise.all([kidsRes.json(), statsRes.json()])
-      )
-      .then(([kidsData, statsData]) => {
-        setKids(kidsData);
+    const controller = new AbortController();
+
+    async function loadAvailability() {
+      try {
+        const response = await fetch("/api/stats", { signal: controller.signal });
+        if (!response.ok) throw new Error("Availability request failed");
+        const data = await response.json();
         setAvailable({
-          shoes: statsData.availableShoesBySize || [],
-          brooms: statsData.availableBroomsBySize || [],
+          shoes: data.availableShoesBySize || [],
+          brooms: data.availableBroomsBySize || [],
         });
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          setLoadError(true);
+        }
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    }
+
+    loadAvailability();
+    return () => controller.abort();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  function update<K extends keyof typeof initialForm>(
+    field: K,
+    value: (typeof initialForm)[K]
+  ) {
+    setFormData((current) => ({ ...current, [field]: value }));
+  }
+
+  function selectEquipment(type: "shoes" | "broom") {
+    setFormData((current) => ({
+      ...current,
+      equipment_type: type,
+      size: "",
+    }));
+  }
+
+  async function submitRequest(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setSubmitting(true);
 
     try {
-      const res = await fetch("/api/requests", {
+      const response = await fetch("/api/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          kid_id: parseInt(formData.kid_id),
-          equipment_type: formData.equipment_type,
-          size: formData.size,
-          notes: formData.notes,
-        }),
+        body: JSON.stringify(formData),
       });
 
-      if (res.ok) {
+      const data = await response.json();
+      if (response.ok) {
         setSubmitted(true);
-        toast.success("Request submitted!");
+        toast.success("Equipment request sent");
       } else {
-        const data = await res.json();
-        toast.error(data.error || "Failed to submit request");
+        toast.error(data.error || "Request could not be sent.");
       }
     } catch {
-      toast.error("Failed to submit request. Please try again.");
+      toast.error("Request could not be sent. Check your connection.");
     } finally {
       setSubmitting(false);
     }
-  };
+  }
 
-  const handleJoinWaitlist = async () => {
-    if (!formData.kid_id || !formData.size) return;
+  async function joinWaitlist() {
+    if (!formData.child_name || !formData.parent_email || !formData.size) return;
     setSubmitting(true);
 
     try {
-      const res = await fetch("/api/waitlist", {
+      const response = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          kid_id: parseInt(formData.kid_id),
-          equipment_type: formData.equipment_type,
-          size: formData.size,
-        }),
+        body: JSON.stringify(formData),
       });
 
-      if (res.ok) {
+      const data = await response.json();
+      if (response.ok) {
         setJoinedWaitlist(true);
-        toast.success("Added to waitlist!");
+        toast.success(
+          data.message === "Already on waitlist"
+            ? "You’re already on this waitlist"
+            : "Waitlist spot saved"
+        );
       } else {
-        const data = await res.json();
-        toast.error(data.error || "Failed to join waitlist");
+        toast.error(data.error || "Waitlist spot could not be saved.");
       }
     } catch {
-      toast.error("Failed to join waitlist.");
+      toast.error("Waitlist spot could not be saved. Check your connection.");
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const selectedKid = kids.find((k) => k.id === parseInt(formData.kid_id));
-  const kidShoeSize = selectedKid?.shoeSize;
-  const availableSizes =
-    formData.equipment_type === "shoes" ? available.shoes : available.brooms;
-
-  const update = (field: string, value: string) =>
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  }
 
   if (loading) {
     return (
-      <div className="max-w-md mx-auto space-y-4">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-64 w-full" />
+      <div className="mx-auto max-w-5xl space-y-5">
+        <Skeleton className="h-10 w-44" />
+        <Skeleton className="h-[42rem] w-full" />
       </div>
     );
   }
 
-  // Success states
-  if (joinedWaitlist) {
+  if (joinedWaitlist || submitted) {
+    const isWaitlist = joinedWaitlist;
     return (
-      <div className="max-w-md mx-auto">
-        <Card className="border-blue-200 bg-blue-50/50">
-          <CardContent className="pt-8 pb-6 text-center">
-            <ClipboardList className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-blue-800 mb-2">
-              Added to Waitlist!
-            </h1>
-            <p className="text-blue-700 mb-6">
-              We&apos;ll notify you when {formData.equipment_type} size{" "}
-              {formData.size} becomes available.
+      <div className="mx-auto max-w-2xl py-4 sm:py-10">
+        <div className="overflow-hidden border border-[#cfdee3] bg-white shadow-[0_22px_60px_rgba(21,36,43,0.1)]">
+          <div
+            className={cn(
+              "px-6 py-10 text-center sm:px-10",
+              isWaitlist ? "bg-[#fff9e9]" : "bg-[#edf6f2]"
+            )}
+          >
+            <span
+              className={cn(
+                "mx-auto flex size-16 items-center justify-center rounded-full text-white shadow-lg",
+                isWaitlist ? "bg-[#b07b1b]" : "bg-[#2e9a72]"
+              )}
+            >
+              {isWaitlist ? (
+                <ClipboardList className="size-8" />
+              ) : (
+                <CheckCircle2 className="size-8" />
+              )}
+            </span>
+            <p
+              className={cn(
+                "mt-6 text-[0.7rem] font-black uppercase tracking-[0.17em]",
+                isWaitlist ? "text-[#8b6113]" : "text-[#226a52]"
+              )}
+            >
+              {isWaitlist ? "Waitlist confirmed" : "Request confirmed"}
             </p>
-            <Button render={<Link href="/" />}>
-              Back to Home
+            <h1 className="mt-3 font-display text-4xl leading-none text-[#15242b]">
+              {isWaitlist ? "WE’LL WATCH THE RACK." : "YOUR GEAR IS IN MOTION."}
+            </h1>
+            <p className="mx-auto mt-4 max-w-md text-base leading-7 text-[#5d7078]">
+              {isWaitlist
+                ? `We’ll contact you when ${formData.equipment_type} in ${formData.size} becomes available.`
+                : "Scott will prepare the request. Pick it up at an upcoming Little Rockers session."}
+            </p>
+          </div>
+          <div className="grid gap-3 p-5 sm:grid-cols-2 sm:p-7">
+            <Button
+              size="lg"
+              className="h-12 rounded-full bg-[#751c2b] text-white hover:bg-[#59141f]"
+              render={<Link href="/lookup" />}
+            >
+              View my equipment
+              <ArrowRight className="size-4" />
             </Button>
-          </CardContent>
-        </Card>
+            <Button
+              variant="outline"
+              size="lg"
+              className="h-12 rounded-full border-[#c5d6dc] bg-white"
+              render={<Link href="/" />}
+            >
+              Back to availability
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (submitted) {
-    return (
-      <div className="max-w-md mx-auto">
-        <Card className="border-emerald-200 bg-emerald-50/50">
-          <CardContent className="pt-8 pb-6 text-center">
-            <CheckCircle2 className="h-12 w-12 text-emerald-600 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-emerald-800 mb-2">
-              Request Submitted!
-            </h1>
-            <p className="text-emerald-700 mb-6">
-              Scott will prepare your equipment. Pick it up at the next session.
-            </p>
-            <Button render={<Link href="/" />}>
-              Back to Home
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const availableSizes =
+    formData.equipment_type === "shoes" ? available.shoes : available.brooms;
+  const selectedInStock = availableSizes.some(
+    (item) =>
+      (item.size || "Standard").toLowerCase() === formData.size.toLowerCase() &&
+      Number(item.count) > 0
+  );
+  const canSubmit = Boolean(
+    formData.child_name && formData.parent_email && formData.size
+  );
 
   return (
-    <div className="max-w-md mx-auto">
-      <div className="mb-6">
-        <Button variant="ghost" size="sm" render={<Link href="/" />}>
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Back to Home
-        </Button>
-      </div>
+    <div className="mx-auto max-w-5xl">
+      <Link
+        href="/"
+        className="mb-6 inline-flex min-h-10 items-center gap-2 text-sm font-bold text-[#5d7078] hover:text-[#15242b]"
+      >
+        <ArrowLeft className="size-4" />
+        Back to availability
+      </Link>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Request Equipment</CardTitle>
-          <CardDescription>
-            Request shoes or a broom for your child. Scott will have it ready at
-            the next session.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-5">
-              {/* Kid selection */}
+      <div className="grid overflow-hidden border border-[#cfdee3] bg-white shadow-[0_24px_70px_rgba(21,36,43,0.09)] lg:grid-cols-[0.72fr_1.28fr]">
+        <aside className="relative overflow-hidden bg-[#751c2b] p-6 text-white sm:p-9">
+          <div
+            aria-hidden="true"
+            className="absolute -bottom-20 -right-20 size-60 rounded-full border-[40px] border-white/10"
+          />
+          <p className="relative text-[0.7rem] font-black uppercase tracking-[0.17em] text-white/65">
+            Step 2 of 2
+          </p>
+          <h1 className="relative mt-4 font-display text-4xl leading-[0.95] tracking-[-0.04em] sm:text-5xl">
+            CHOOSE THEIR SEASON GEAR.
+          </h1>
+          <p className="relative mt-5 max-w-md text-sm leading-6 text-white/70">
+            Select what is ready today or ask for another size. We’ll match the
+            request to the registration using your email.
+          </p>
+
+          <div className="relative mt-10 space-y-5 border-t border-white/15 pt-7">
+            <div className="flex gap-3">
+              <PackageCheck className="mt-0.5 size-5 shrink-0 text-[#e5b94a]" />
               <div>
-                <Label htmlFor="kid">
-                  Select Your Child <span className="text-destructive">*</span>
-                </Label>
-                <select
-                  id="kid"
-                  value={formData.kid_id}
-                  onChange={(e) => update("kid_id", e.target.value)}
-                  className="mt-1.5 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  required
-                >
-                  <option value="">Choose...</option>
-                  {kids.map((kid) => (
-                    <option key={kid.id} value={kid.id}>
-                      {kid.name}{" "}
-                      {kid.shoeSize
-                        ? `(Size ${kid.shoeSize})`
-                        : ""}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Don&apos;t see your child?{" "}
-                  <Link href="/register" className="text-primary hover:underline">
-                    Register them first
-                  </Link>
+                <p className="text-sm font-extrabold">Live inventory</p>
+                <p className="mt-0.5 text-xs leading-5 text-white/55">
+                  Size counts reflect what is currently ready to borrow.
                 </p>
               </div>
-
-              {/* Equipment type */}
+            </div>
+            <div className="flex gap-3">
+              <MapPin className="mt-0.5 size-5 shrink-0 text-[#e5b94a]" />
               <div>
-                <Label>
-                  Equipment Type <span className="text-destructive">*</span>
-                </Label>
-                <div className="grid grid-cols-2 gap-2 mt-1.5">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setFormData({ ...formData, equipment_type: "shoes", size: "" })
-                    }
-                    className={cn(
-                      "flex flex-col items-center gap-1 p-4 rounded-lg border-2 transition-colors",
-                      formData.equipment_type === "shoes"
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-muted-foreground/30"
-                    )}
-                  >
-                    <Footprints className="h-6 w-6" />
-                    <span className="font-medium text-sm">Shoes</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setFormData({ ...formData, equipment_type: "broom", size: "" })
-                    }
-                    className={cn(
-                      "flex flex-col items-center gap-1 p-4 rounded-lg border-2 transition-colors",
-                      formData.equipment_type === "broom"
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-muted-foreground/30"
-                    )}
-                  >
-                    <Brush className="h-6 w-6" />
-                    <span className="font-medium text-sm">Broom</span>
-                  </button>
-                </div>
+                <p className="text-sm font-extrabold">Pickup at the rink</p>
+                <p className="mt-0.5 text-xs leading-5 text-white/55">
+                  Scott will coordinate pickup at a Little Rockers session.
+                </p>
               </div>
-
-              {/* Size selection */}
+            </div>
+            <div className="flex gap-3">
+              <LockKeyhole className="mt-0.5 size-5 shrink-0 text-[#e5b94a]" />
               <div>
-                <Label>
-                  Size <span className="text-destructive">*</span>
-                </Label>
-                {availableSizes.length === 0 ? (
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-1.5">
-                    <p className="text-amber-800 text-sm font-medium">
-                      No {formData.equipment_type} currently available.
-                    </p>
-                    <p className="text-amber-700 text-xs mt-1">
-                      Enter a size below and join the waitlist.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-4 gap-2 mt-1.5">
-                    {availableSizes.map((item) => (
-                      <button
-                        key={item.size}
-                        type="button"
-                        onClick={() => update("size", item.size)}
-                        className={cn(
-                          "p-2 rounded-lg border text-center transition-colors",
-                          formData.size === item.size
-                            ? "border-primary bg-primary/5 font-medium"
-                            : "border-border hover:border-muted-foreground/30"
-                        )}
-                      >
-                        <div className="font-medium text-sm">
-                          {item.size || "Std"}
-                        </div>
-                        <div className="text-xs text-emerald-600">
-                          {item.count} avail
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {kidShoeSize &&
-                  formData.equipment_type === "shoes" && (
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {selectedKid?.name}&apos;s shoe size: {kidShoeSize}
-                    </p>
-                  )}
+                <p className="text-sm font-extrabold">Private by design</p>
+                <p className="mt-0.5 text-xs leading-5 text-white/55">
+                  The roster is never published. Name and email only verify your
+                  family’s registration.
+                </p>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <div className="p-5 sm:p-9">
+          <div className="mb-8 border-b border-[#dce7eb] pb-5">
+            <p className="text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#751c2b]">
+              Equipment request
+            </p>
+            <h2 className="mt-1 text-2xl font-extrabold tracking-[-0.03em] text-[#15242b]">
+              Who is this for?
+            </h2>
+          </div>
+
+          {loadError ? (
+            <div className="mb-6 flex gap-3 border-l-4 border-[#e5b94a] bg-[#fff9e9] px-4 py-3 text-sm text-[#775c22]">
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+              Live counts are unavailable, but you can still enter a size and
+              join the waitlist.
+            </div>
+          ) : null}
+
+          <form onSubmit={submitRequest}>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="child_name">Child’s full name</Label>
                 <Input
-                  value={formData.size}
-                  onChange={(e) => update("size", e.target.value)}
-                  className="mt-2"
-                  placeholder="Or type a size if not listed..."
+                  id="child_name"
+                  name="child_name"
+                  value={formData.child_name}
+                  onChange={(event) => update("child_name", event.target.value)}
+                  required
+                  autoComplete="name"
+                  placeholder="As registered"
+                  className="mt-2 h-11 bg-white"
                 />
               </div>
-
-              {/* Notes */}
               <div>
-                <Label htmlFor="notes">Notes (optional)</Label>
-                <Textarea
-                  id="notes"
-                  value={formData.notes}
-                  onChange={(e) => update("notes", e.target.value)}
-                  rows={2}
-                  placeholder="Any special requests..."
-                  className="mt-1.5"
+                <Label htmlFor="parent_email">Parent email</Label>
+                <Input
+                  id="parent_email"
+                  name="parent_email"
+                  type="email"
+                  value={formData.parent_email}
+                  onChange={(event) => update("parent_email", event.target.value)}
+                  required
+                  autoComplete="email"
+                  placeholder="Used at registration"
+                  className="mt-2 h-11 bg-white"
                 />
               </div>
             </div>
+            <p className="mt-2 text-xs text-[#75868d]">
+              Not registered yet?{" "}
+              <Link href="/register" className="font-bold text-[#751c2b] hover:underline">
+                Register a child first
+              </Link>
+              .
+            </p>
 
-            {/* Submit / Waitlist */}
-            {availableSizes.length > 0 ? (
+            <fieldset className="mt-8 border-t border-[#dce7eb] pt-7">
+              <legend className="text-sm font-extrabold text-[#15242b]">
+                Choose equipment
+              </legend>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                {[
+                  { value: "shoes" as const, label: "Curling shoes", icon: Footprints },
+                  { value: "broom" as const, label: "Junior broom", icon: Brush },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    aria-pressed={formData.equipment_type === option.value}
+                    onClick={() => selectEquipment(option.value)}
+                    className={cn(
+                      "flex min-h-24 flex-col items-start justify-between border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2480a8]",
+                      formData.equipment_type === option.value
+                        ? "border-[#751c2b] bg-[#fbedef] text-[#751c2b]"
+                        : "border-[#cfdee3] bg-white text-[#153b4d] hover:border-[#9fc7d6]"
+                    )}
+                  >
+                    <option.icon className="size-5" />
+                    <span className="text-sm font-extrabold">{option.label}</span>
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset className="mt-7">
+              <legend className="text-sm font-extrabold text-[#15242b]">
+                Select a size
+              </legend>
+              {availableSizes.length > 0 ? (
+                <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {availableSizes.map((item) => {
+                    const size = item.size || "Standard";
+                    const selected = formData.size === size;
+                    return (
+                      <button
+                        key={size}
+                        type="button"
+                        aria-pressed={selected}
+                        onClick={() => update("size", size)}
+                        className={cn(
+                          "min-h-16 border px-3 py-2 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2480a8]",
+                          selected
+                            ? "border-[#751c2b] bg-[#751c2b] text-white"
+                            : "border-[#cfdee3] bg-white text-[#15242b] hover:border-[#9fc7d6]"
+                        )}
+                      >
+                        <span className="block text-sm font-black">{size}</span>
+                        <span
+                          className={cn(
+                            "text-[0.68rem] font-bold",
+                            selected ? "text-white/65" : "text-[#2e7c60]"
+                          )}
+                        >
+                          {item.count} available
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="mt-4 border-l-4 border-[#e5b94a] bg-[#fff9e9] px-4 py-3">
+                  <p className="text-sm font-extrabold text-[#5c430f]">
+                    No {formData.equipment_type === "shoes" ? "shoes" : "brooms"} are
+                    ready right now.
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-[#775c22]">
+                    Enter the size you need and we’ll save a waitlist spot.
+                  </p>
+                </div>
+              )}
+              <Label htmlFor="size" className="mt-4 block">
+                {availableSizes.length > 0 ? "Or enter another size" : "Needed size"}
+              </Label>
+              <Input
+                id="size"
+                name="size"
+                value={formData.size}
+                onChange={(event) => update("size", event.target.value)}
+                required
+                placeholder={
+                  formData.equipment_type === "shoes"
+                    ? "e.g. 4.5"
+                    : "e.g. Short or Standard"
+                }
+                className="mt-2 h-11 bg-white"
+              />
+            </fieldset>
+
+            <div className="mt-7">
+              <Label htmlFor="notes">
+                Notes <span className="font-normal text-[#75868d]">(optional)</span>
+              </Label>
+              <Textarea
+                id="notes"
+                name="notes"
+                value={formData.notes}
+                onChange={(event) => update("notes", event.target.value)}
+                rows={3}
+                maxLength={500}
+                placeholder="Fit notes, pickup details, or anything Scott should know"
+                className="mt-2 bg-white"
+              />
+            </div>
+
+            {selectedInStock ? (
               <Button
                 type="submit"
-                className="w-full mt-6"
                 size="lg"
-                disabled={submitting || !formData.kid_id || !formData.size}
+                className="mt-8 h-12 w-full rounded-full bg-[#751c2b] text-white hover:bg-[#59141f]"
+                disabled={submitting || !canSubmit}
               >
-                {submitting ? "Submitting..." : "Submit Request"}
+                {submitting ? "Sending request…" : "Request this equipment"}
+                {!submitting ? <ArrowRight className="size-4" /> : null}
               </Button>
             ) : (
               <Button
                 type="button"
-                onClick={handleJoinWaitlist}
-                variant="secondary"
-                className="w-full mt-6"
                 size="lg"
-                disabled={submitting || !formData.kid_id || !formData.size}
+                className="mt-8 h-12 w-full rounded-full bg-[#b07b1b] text-white hover:bg-[#8b6113]"
+                disabled={submitting || !canSubmit}
+                onClick={joinWaitlist}
               >
-                {submitting ? "Joining..." : "Join Waitlist"}
+                {submitting ? "Saving waitlist spot…" : "Join the waitlist"}
+                {!submitting ? <ClipboardList className="size-4" /> : null}
               </Button>
             )}
+            <p className="mt-3 text-center text-xs text-[#75868d]">
+              {selectedInStock
+                ? "A request holds your place; Scott confirms the final fit at pickup."
+                : "We’ll use the parent email on the registration when gear is ready."}
+            </p>
           </form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

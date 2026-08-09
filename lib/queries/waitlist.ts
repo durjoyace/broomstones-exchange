@@ -1,4 +1,4 @@
-import { eq, isNull, sql, and } from "drizzle-orm";
+import { eq, isNull, and } from "drizzle-orm";
 import { db } from "../db";
 import { equipmentWaitlist, kids } from "../db/schema";
 

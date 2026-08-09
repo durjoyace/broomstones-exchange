@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAllKids, createKid } from "@/lib/queries/kids";
 import { kidSchema } from "@/lib/validations/kid";
+import { isAuthenticated } from "@/lib/auth";
 
 export async function GET() {
+  if (!(await isAuthenticated())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const kids = await getAllKids();
-    return NextResponse.json(kids);
+    return NextResponse.json(kids, {
+      headers: { "Cache-Control": "private, no-store" },
+    });
   } catch (error) {
     console.error("Error fetching kids:", error);
     return NextResponse.json({ error: "Failed to fetch kids" }, { status: 500 });

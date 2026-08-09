@@ -1,5 +1,5 @@
-import { eq, ilike, isNull, sql } from "drizzle-orm";
-import { db, type Kid, type NewKid } from "../db";
+import { and, eq, ilike, isNull, sql } from "drizzle-orm";
+import { db, type NewKid } from "../db";
 import { kids, checkouts, equipment } from "../db/schema";
 
 export async function getAllKids() {
@@ -33,6 +33,55 @@ export async function getKidById(id: number) {
     .from(kids)
     .where(eq(kids.id, id));
   return kid ?? null;
+}
+
+export async function getKidByIdentity(name: string, parentEmail: string) {
+  const [kid] = await db
+    .select({
+      id: kids.id,
+      name: kids.name,
+      shoeSize: kids.shoeSize,
+    })
+    .from(kids)
+    .where(
+      and(
+        sql<boolean>`lower(trim(${kids.name})) = lower(${name.trim()})`,
+        sql<boolean>`lower(trim(${kids.parentEmail})) = lower(${parentEmail.trim()})`,
+        isNull(kids.deletedAt)
+      )
+    )
+    .limit(1);
+
+  return kid ?? null;
+}
+
+export async function getKidEquipmentByIdentity(
+  name: string,
+  parentEmail: string
+) {
+  const kid = await getKidByIdentity(name, parentEmail);
+  if (!kid) return null;
+
+  const activeCheckouts = await db
+    .select({
+      id: checkouts.id,
+      kidId: checkouts.kidId,
+      checkedOutAt: checkouts.checkedOutAt,
+      equipmentType: equipment.type,
+      equipmentSize: equipment.size,
+      equipmentBrand: equipment.brand,
+    })
+    .from(checkouts)
+    .innerJoin(equipment, eq(checkouts.equipmentId, equipment.id))
+    .where(
+      and(
+        eq(checkouts.kidId, kid.id),
+        isNull(checkouts.returnedAt)
+      )
+    )
+    .orderBy(checkouts.checkedOutAt);
+
+  return { ...kid, checkouts: activeCheckouts };
 }
 
 export async function createKid(data: NewKid) {

@@ -16,7 +16,7 @@ Parents register their kids, browse available equipment, and request shoes or br
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 24 LTS
 - A Neon PostgreSQL database
 
 ### Setup
@@ -52,10 +52,11 @@ Open [http://localhost:3000](http://localhost:3000).
 ## Features
 
 ### For Parents
-- **Register** a child for the equipment exchange
-- **Request** shoes or brooms by size
-- **Look up** what equipment your child has checked out
-- **Join waitlist** when desired sizes are unavailable
+- **Register** a child through a guided, mobile-first flow
+- **Browse live availability** for shoes and brooms by size
+- **Request** in-stock equipment or join the waitlist
+- **Look up** current equipment with child name + registered parent email
+- **Keep family information private** — the roster is never sent to public clients
 
 ### For Coordinators
 - **Equipment management** — add, edit, retire items with photos
@@ -68,10 +69,18 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ### Security
 - Signed cookies (HMAC-SHA256) — no forgeable auth
-- Middleware-enforced route protection for all admin pages
+- Proxy-enforced protection for coordinator pages **and API routes**
+- Parent identity matching for requests, waitlists, and equipment lookup
+- Public stats omit child-level activity and responses are never shared-cacheable
 - Rate limiting on login (5 attempts / 15 minutes)
-- Zod validation on every API mutation
+- Zod validation on public mutations and lookups
 - Soft deletes preserve audit trail
+
+### Launch quality
+- 2026–27 season-specific, responsive visual system
+- Keyboard-visible focus states, skip link, and reduced-motion support
+- Parent-first navigation with a separate coordinator mode
+- GitHub Actions gate runs lint and a production build on every pull request
 
 ## Project Structure
 
@@ -89,7 +98,7 @@ lib/
   validations/          # Zod schemas
   auth.ts               # Cookie signing, rate limiting
   constants.ts          # Shared enums and options
-middleware.ts           # Route protection
+proxy.ts                # Route and API protection
 ```
 
 ## Scripts

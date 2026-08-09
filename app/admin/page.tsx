@@ -43,22 +43,27 @@ function AdminLoginContent() {
   const redirectTo = searchParams.get("redirect") || "/";
 
   useEffect(() => {
-    checkAuth();
-  }, []);
+    let active = true;
 
-  const checkAuth = async () => {
-    try {
-      const res = await fetch("/api/auth");
-      const data = await res.json();
-      if (data.authenticated) {
-        router.push(redirectTo);
+    async function checkAuth() {
+      try {
+        const response = await fetch("/api/auth");
+        const data = await response.json();
+        if (data.authenticated) {
+          router.push(redirectTo);
+        }
+      } catch {
+        // Not authenticated, stay on login page
+      } finally {
+        if (active) setChecking(false);
       }
-    } catch {
-      // Not authenticated, stay on login page
-    } finally {
-      setChecking(false);
     }
-  };
+
+    checkAuth();
+    return () => {
+      active = false;
+    };
+  }, [redirectTo, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

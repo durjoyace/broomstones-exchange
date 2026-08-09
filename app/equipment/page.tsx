@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Package, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -305,13 +306,16 @@ export default function EquipmentPage() {
                     className="mt-1"
                   />
                   {formData.photo_url && (
-                    <img
+                    <Image
                       src={formData.photo_url}
-                      alt="Preview"
-                      className="w-20 h-20 object-cover rounded mt-2"
-                      onError={(e) =>
-                        (e.currentTarget.style.display = "none")
-                      }
+                      alt="Equipment preview"
+                      width={80}
+                      height={80}
+                      unoptimized
+                      className="mt-2 size-20 rounded object-cover"
+                      onError={(event) => {
+                        event.currentTarget.style.display = "none";
+                      }}
                     />
                   )}
                 </div>
@@ -369,13 +373,16 @@ export default function EquipmentPage() {
                 <TableRow key={item.id}>
                   <TableCell>
                     {item.photoUrl ? (
-                      <img
+                      <Image
                         src={item.photoUrl}
                         alt={`${item.type} ${item.size || ""}`}
-                        className="w-10 h-10 object-cover rounded"
-                        onError={(e) =>
-                          (e.currentTarget.style.display = "none")
-                        }
+                        width={40}
+                        height={40}
+                        unoptimized
+                        className="size-10 rounded object-cover"
+                        onError={(event) => {
+                          event.currentTarget.style.display = "none";
+                        }}
                       />
                     ) : (
                       <div className="w-10 h-10 bg-muted rounded flex items-center justify-center">

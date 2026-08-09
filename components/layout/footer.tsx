@@ -1,29 +1,61 @@
+import Link from "next/link";
+import { ArrowUpRight, Mail } from "lucide-react";
+import { HouseMark } from "@/components/brand/house-mark";
+
 export function Footer() {
   return (
-    <footer className="border-t border-gray-200 bg-white mt-auto">
-      <div className="max-w-6xl mx-auto px-6 py-5">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-400">
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 bg-red-800 rounded-full flex items-center justify-center">
-              <span className="text-white text-[8px] font-bold">B</span>
+    <footer className="mt-auto border-t border-[#cfdee3] bg-[#e6f0f4]">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="grid gap-8 md:grid-cols-[1.2fr_0.8fr] md:items-end">
+          <div>
+            <div className="flex items-center gap-3">
+              <HouseMark className="size-11" />
+              <div>
+                <p className="text-sm font-extrabold text-[#15242b]">
+                  Broomstones Equipment Exchange
+                </p>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5d7078]">
+                  Little Rockers · Wayland, MA
+                </p>
+              </div>
             </div>
-            <span className="text-gray-500 font-medium">
-              Broomstones Curling Club
-            </span>
+            <p className="mt-4 max-w-lg text-sm leading-6 text-[#5d7078]">
+              Free, community-supported curling gear so every junior can step
+              onto the ice ready to play.
+            </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-3 md:items-end">
             <a
               href="mailto:Scott.Price@broomstones.org"
-              className="hover:text-gray-600 transition-colors"
+              className="inline-flex min-h-10 items-center gap-2 text-sm font-bold text-[#153b4d] hover:text-[#751c2b]"
             >
-              Scott.Price@broomstones.org
+              <Mail className="size-4" />
+              Ask Scott about equipment
             </a>
-            <span className="text-gray-200">|</span>
+            <a
+              href="https://juniors.broomstones.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-10 items-center gap-1.5 text-sm font-semibold text-[#5d7078] hover:text-[#15242b]"
+            >
+              Visit the Little Rockers program
+              <ArrowUpRight className="size-4" />
+            </a>
+          </div>
+        </div>
+        <div className="mt-8 flex flex-col gap-3 border-t border-[#c5d6dc] pt-5 text-xs text-[#5d7078] sm:flex-row sm:items-center sm:justify-between">
+          <span>
+            2026–27 season · Run by volunteers at Broomstones Curling Club
+          </span>
+          <div className="flex items-center gap-4">
+            <Link href="/admin" className="font-semibold hover:text-[#15242b]">
+              Coordinator sign in
+            </Link>
             <a
               href="https://broomstones.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-gray-600 transition-colors"
+              className="font-semibold hover:text-[#15242b]"
             >
               broomstones.com
             </a>
