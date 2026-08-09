@@ -13,6 +13,7 @@ import {
   ScanSearch,
   Users,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { HouseMark } from "@/components/brand/house-mark";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,13 +24,15 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
-const publicNavigation = [
+type NavigationItem = { name: string; href: string; icon?: LucideIcon };
+
+const publicNavigation: NavigationItem[] = [
   { name: "Availability", href: "/#availability" },
   { name: "How it works", href: "/#how-it-works" },
   { name: "My equipment", href: "/lookup" },
 ];
 
-const coordinatorNavigation = [
+const coordinatorNavigation: NavigationItem[] = [
   { name: "Dashboard", href: "/", icon: Home },
   { name: "Inventory", href: "/equipment", icon: Boxes },
   { name: "Kids", href: "/kids", icon: Users },
@@ -51,7 +54,7 @@ export function Header() {
   const coordinatorMode = coordinatorPrefixes.some((prefix) =>
     pathname.startsWith(prefix)
   );
-  const navigation = coordinatorMode
+  const navigation: NavigationItem[] = coordinatorMode
     ? coordinatorNavigation
     : publicNavigation;
 
@@ -84,7 +87,7 @@ export function Header() {
         <div className="hidden items-center gap-1 md:flex">
           {navigation.map((item) => {
             const isActive = itemIsActive(item.href);
-            const Icon = "icon" in item ? item.icon : null;
+            const Icon = item.icon;
             return (
               <Link
                 key={item.name}
@@ -147,7 +150,7 @@ export function Header() {
             <div className="mt-6 flex flex-col gap-1">
               {navigation.map((item) => {
                 const isActive = itemIsActive(item.href);
-                const Icon = "icon" in item ? item.icon : null;
+                const Icon = item.icon;
                 return (
                   <Link
                     key={item.name}
