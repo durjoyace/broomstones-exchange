@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -103,24 +104,24 @@ function EquipmentAvailability({
   const total = items.reduce((sum, item) => sum + Number(item.count), 0);
 
   return (
-    <article className="overflow-hidden border border-[#cfdee3] bg-white shadow-[0_18px_50px_rgba(21,36,43,0.07)]">
-      <header className="flex items-start justify-between gap-4 border-b border-[#dce7eb] px-5 py-5 sm:px-6">
+    <article className="overflow-hidden border border-[#D9DEE1] bg-white shadow-[0_18px_50px_rgba(21,36,43,0.07)]">
+      <header className="flex items-start justify-between gap-4 border-b border-[#E3E7E9] px-5 py-5 sm:px-6">
         <div className="flex gap-3">
-          <span className="flex size-11 items-center justify-center rounded-full bg-[#e6f0f4] text-[#153b4d]">
+          <span className="flex size-11 items-center justify-center rounded-full bg-[#E8ECEE] text-[#2C2E35]">
             <Icon className="size-5" />
           </span>
           <div>
-            <h3 className="text-lg font-extrabold tracking-[-0.025em] text-[#15242b]">
+            <h3 className="text-lg font-extrabold tracking-[-0.025em] text-[#2C2E35]">
               {title}
             </h3>
-            <p className="mt-1 text-sm text-[#5d7078]">{description}</p>
+            <p className="mt-1 text-sm text-[#5B6870]">{description}</p>
           </div>
         </div>
         <div className="text-right">
-          <span className="block font-display text-3xl leading-none text-[#751c2b]">
+          <span className="block font-display text-3xl leading-none text-[#BC1F25]">
             {total}
           </span>
-          <span className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-[#5d7078]">
+          <span className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-[#5B6870]">
             available
           </span>
         </div>
@@ -128,13 +129,13 @@ function EquipmentAvailability({
 
       {items.length === 0 ? (
         <div className="px-6 py-10 text-center">
-          <p className="font-bold text-[#15242b]">Nothing on the rack today</p>
-          <p className="mx-auto mt-1 max-w-sm text-sm leading-6 text-[#5d7078]">
+          <p className="font-bold text-[#2C2E35]">Nothing on the rack today</p>
+          <p className="mx-auto mt-1 max-w-sm text-sm leading-6 text-[#5B6870]">
             Request the size you need and we’ll add your child to the waitlist.
           </p>
           <Link
             href="/request"
-            className="mt-4 inline-flex min-h-11 items-center gap-1.5 font-bold text-[#751c2b] hover:underline"
+            className="mt-4 inline-flex min-h-11 items-center gap-1.5 font-bold text-[#BC1F25] hover:underline"
           >
             Request this item
             <ArrowRight className="size-4" />
@@ -150,16 +151,16 @@ function EquipmentAvailability({
                 key={item.size || "standard"}
                 className={cn(
                   "flex min-h-[5.25rem] items-center justify-between gap-4 px-5 py-4 sm:px-6",
-                  index < items.length - 1 && "border-b border-[#e5edef]",
-                  index % 2 === 0 && "sm:border-r sm:border-[#e5edef]",
+                  index < items.length - 1 && "border-b border-[#E8ECEE]",
+                  index % 2 === 0 && "sm:border-r sm:border-[#E8ECEE]",
                   index >= items.length - 2 && "sm:border-b-0"
                 )}
               >
                 <div>
-                  <span className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-[#75868d]">
+                  <span className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-[#69767E]">
                     {title === "Curling shoes" ? "Shoe size" : "Broom"}
                   </span>
-                  <p className="mt-0.5 text-lg font-extrabold text-[#15242b]">
+                  <p className="mt-0.5 text-lg font-extrabold text-[#2C2E35]">
                     {item.size || "Standard"}
                   </p>
                 </div>
@@ -180,7 +181,7 @@ function EquipmentAvailability({
   );
 }
 
-function LiveHouse({
+function RinkAvailability({
   available,
   shoes,
   brooms,
@@ -190,38 +191,42 @@ function LiveHouse({
   brooms: number;
 }) {
   return (
-    <div className="relative mx-auto aspect-square w-full max-w-[28rem]">
-      <div className="absolute inset-0 rounded-full bg-white shadow-[0_28px_80px_rgba(43,6,16,0.3)]" />
-      <div className="absolute inset-[13%] rounded-full bg-[#2480a8]" />
-      <div className="absolute inset-[28%] rounded-full bg-white" />
-      <div className="absolute inset-[41%] rounded-full bg-[#751c2b]" />
-
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-        <span className="font-display text-5xl leading-none text-white sm:text-6xl">
-          {available}
-        </span>
-        <span className="mt-1 text-[0.67rem] font-black uppercase tracking-[0.2em] text-white/85">
-          pieces ready
-        </span>
+    <div className="relative mx-auto min-h-[27rem] w-full max-w-[31rem] overflow-hidden rounded-t-[12rem] rounded-b-[1.5rem] border border-white/18 bg-[#5B6870] shadow-[0_30px_70px_rgba(20,21,25,0.34)] lg:min-h-[31rem]">
+      <Image
+        src="https://broomstones.com/hero-banner.png"
+        alt="The curling sheets inside Broomstones Curling Club"
+        fill
+        priority
+        sizes="(min-width: 1024px) 42vw, 92vw"
+        className="object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#2C2E35]/95 via-[#2C2E35]/15 to-[#2C2E35]/5" />
+      <div className="absolute right-5 top-16 rounded-full border border-white/35 bg-[#BC1F25]/95 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-white shadow-lg backdrop-blur">
+        Live inventory
       </div>
-
-      <div className="stone-arrival absolute left-[63%] top-[18%] size-[17%] rounded-full border-[5px] border-white bg-[#e5b94a] shadow-[0_10px_22px_rgba(21,36,43,0.28)]">
-        <span className="absolute left-1/2 top-[-22%] h-[35%] w-[54%] -translate-x-1/2 rounded-full border-2 border-white bg-[#751c2b]" />
-      </div>
-
-      <div className="absolute bottom-[4%] left-1/2 flex w-[76%] -translate-x-1/2 justify-between rounded-2xl border border-white/60 bg-white/95 px-5 py-3 shadow-lg backdrop-blur">
-        <div>
-          <span className="block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-[#75868d]">
-            Shoes
-          </span>
-          <span className="text-lg font-black text-[#153b4d]">{shoes}</span>
+      <div className="absolute inset-x-5 bottom-5 rounded-xl border border-white/18 bg-[#2C2E35]/88 p-4 text-white shadow-xl backdrop-blur-md sm:inset-x-6 sm:bottom-6 sm:p-5">
+        <div className="flex items-end justify-between gap-4 border-b border-white/14 pb-4">
+          <div>
+            <span className="font-display text-5xl font-bold leading-none">{available}</span>
+            <span className="ml-2 text-xs font-black uppercase tracking-[0.16em] text-white/62">
+              pieces ready
+            </span>
+          </div>
+          <span className="size-3 rounded-full bg-[#69B88F] shadow-[0_0_0_5px_rgba(105,184,143,0.15)]" />
         </div>
-        <div className="w-px bg-[#cfdee3]" />
-        <div className="text-right">
-          <span className="block text-[0.62rem] font-bold uppercase tracking-[0.12em] text-[#75868d]">
-            Brooms
-          </span>
-          <span className="text-lg font-black text-[#153b4d]">{brooms}</span>
+        <div className="grid grid-cols-2 divide-x divide-white/14 pt-4">
+          <div>
+            <span className="block text-[0.66rem] font-bold uppercase tracking-[0.14em] text-white/52">
+              Shoes
+            </span>
+            <span className="font-display text-2xl font-bold">{shoes}</span>
+          </div>
+          <div className="pl-5">
+            <span className="block text-[0.66rem] font-bold uppercase tracking-[0.14em] text-white/52">
+              Brooms
+            </span>
+            <span className="font-display text-2xl font-bold">{brooms}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -237,21 +242,21 @@ function CoordinatorPanel({ stats }: { stats: Stats }) {
 
   if (!authenticated) {
     return (
-      <section className="flex flex-col justify-between gap-5 border border-[#cfdee3] bg-white px-5 py-6 sm:flex-row sm:items-center sm:px-7">
+      <section className="flex flex-col justify-between gap-5 border border-[#D9DEE1] bg-white px-5 py-6 sm:flex-row sm:items-center sm:px-7">
         <div>
-          <p className="text-[0.68rem] font-bold uppercase tracking-[0.15em] text-[#751c2b]">
+          <p className="text-[0.68rem] font-bold uppercase tracking-[0.15em] text-[#BC1F25]">
             Club operations
           </p>
-          <h2 className="mt-1 text-xl font-extrabold tracking-[-0.025em] text-[#15242b]">
+          <h2 className="mt-1 text-xl font-extrabold tracking-[-0.025em] text-[#2C2E35]">
             Running the exchange today?
           </h2>
-          <p className="mt-1 text-sm text-[#5d7078]">
+          <p className="mt-1 text-sm text-[#5B6870]">
             Open checkouts, inventory, match tools, and print sheets.
           </p>
         </div>
         <Link
           href="/admin"
-          className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-[#c5d6dc] px-5 text-sm font-bold text-[#153b4d] transition-colors hover:border-[#2480a8] hover:bg-[#e6f0f4]"
+          className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-[#C9D0D4] px-5 text-sm font-bold text-[#2C2E35] transition-colors hover:border-[#BC1F25] hover:bg-[#E8ECEE]"
         >
           <LogIn className="size-4" />
           Coordinator sign in
@@ -274,10 +279,10 @@ function CoordinatorPanel({ stats }: { stats: Stats }) {
   ];
 
   return (
-    <section className="overflow-hidden border border-[#284752] bg-[#15242b] text-white shadow-[0_22px_60px_rgba(21,36,43,0.16)]">
+    <section className="overflow-hidden border border-[#454850] bg-[#2C2E35] text-white shadow-[0_22px_60px_rgba(21,36,43,0.16)]">
       <header className="flex flex-col justify-between gap-4 border-b border-white/10 px-5 py-5 sm:flex-row sm:items-center sm:px-7">
         <div>
-          <p className="text-[0.68rem] font-bold uppercase tracking-[0.16em] text-[#9fc7d6]">
+          <p className="text-[0.68rem] font-bold uppercase tracking-[0.16em] text-[#CBD1D5]">
             Coordinator desk
           </p>
           <h2 className="mt-1 text-2xl font-extrabold tracking-[-0.03em]">
@@ -299,9 +304,9 @@ function CoordinatorPanel({ stats }: { stats: Stats }) {
           <Link
             key={action.href}
             href={action.href}
-            className="group flex min-h-28 flex-col justify-between bg-[#15242b] p-4 transition-colors hover:bg-[#1c3039]"
+            className="group flex min-h-28 flex-col justify-between bg-[#2C2E35] p-4 transition-colors hover:bg-[#353840]"
           >
-            <action.icon className="size-5 text-[#9fc7d6]" />
+            <action.icon className="size-5 text-[#CBD1D5]" />
             <span className="flex items-center justify-between text-sm font-bold">
               {action.label}
               <ChevronRight className="size-4 opacity-50 transition-transform group-hover:translate-x-0.5" />
@@ -312,7 +317,7 @@ function CoordinatorPanel({ stats }: { stats: Stats }) {
 
       <div className="grid lg:grid-cols-2">
         <div className="border-b border-white/10 p-5 sm:p-7 lg:border-b-0 lg:border-r">
-          <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-[#9fc7d6]">
+          <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-[#CBD1D5]">
             Shoe supply by registered size
           </h3>
           {stats.kidsSizeDistribution.length === 0 ? (
@@ -350,7 +355,7 @@ function CoordinatorPanel({ stats }: { stats: Stats }) {
 
         <div className="p-5 sm:p-7">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-[#9fc7d6]">
+            <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-[#CBD1D5]">
               Recent activity
             </h3>
             <Link href="/checkouts" className="text-xs font-bold text-white/55 hover:text-white">
@@ -366,7 +371,7 @@ function CoordinatorPanel({ stats }: { stats: Stats }) {
                   <span
                     className={cn(
                       "size-2 shrink-0 rounded-full",
-                      activity.returnedAt ? "bg-[#53b28d]" : "bg-[#e5b94a]"
+                      activity.returnedAt ? "bg-[#53b28d]" : "bg-[#BC1F25]"
                     )}
                   />
                   <div className="min-w-0 flex-1 text-sm">
@@ -460,10 +465,10 @@ export default function Dashboard() {
         <span className="mx-auto flex size-12 items-center justify-center rounded-full bg-[#fbedef] text-[#a92b3d]">
           <AlertTriangle className="size-5" />
         </span>
-        <h1 className="mt-5 text-2xl font-extrabold text-[#15242b]">
+        <h1 className="mt-5 text-2xl font-extrabold text-[#2C2E35]">
           Availability is temporarily off the ice
         </h1>
-        <p className="mt-2 text-sm leading-6 text-[#5d7078]">
+        <p className="mt-2 text-sm leading-6 text-[#5B6870]">
           Refresh the page, or email Scott if you need equipment for the next
           Little Rockers session.
         </p>
@@ -471,13 +476,13 @@ export default function Dashboard() {
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#751c2b] px-5 text-sm font-bold text-white hover:bg-[#59141f]"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#BC1F25] px-5 text-sm font-bold text-white hover:bg-[#99191E]"
           >
             Refresh availability
           </button>
           <a
             href="mailto:Scott.Price@broomstones.org"
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#c5d6dc] px-5 text-sm font-bold text-[#153b4d]"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#C9D0D4] px-5 text-sm font-bold text-[#2C2E35]"
           >
             <Mail className="size-4" />
             Email Scott
@@ -510,57 +515,52 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-12 sm:space-y-16">
-      <section className="relative isolate overflow-hidden rounded-[2rem] bg-[#751c2b] px-5 py-8 text-white shadow-[0_28px_80px_rgba(72,17,31,0.22)] sm:px-9 sm:py-12 lg:min-h-[36rem] lg:px-14">
-        <div
-          aria-hidden="true"
-          className="absolute inset-y-0 right-[14%] hidden w-px bg-white/12 lg:block"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute bottom-0 left-[8%] h-24 w-px rotate-[28deg] bg-white/12"
-        />
-        <div className="relative grid items-center gap-10 lg:grid-cols-[1.08fr_0.92fr]">
-          <div>
-            <div className="inline-flex items-center gap-2 border-b border-white/25 pb-2 text-[0.7rem] font-black uppercase tracking-[0.18em] text-white/80">
-              <span className="size-2 rounded-full bg-[#e5b94a] shadow-[0_0_0_4px_rgba(229,185,74,0.16)]" />
+      <section className="relative isolate overflow-hidden rounded-[1.5rem] border border-[#454850] bg-[#2C2E35] text-white shadow-[0_28px_80px_rgba(44,46,53,0.2)]">
+        <div aria-hidden="true" className="absolute -left-28 -top-28 size-80 rounded-full border-[42px] border-[#BC1F25]/16" />
+        <div className="relative grid items-center gap-10 px-5 py-8 sm:px-9 sm:py-12 lg:min-h-[38rem] lg:grid-cols-[1.02fr_0.98fr] lg:px-14">
+          <div className="relative z-10">
+            <p className="font-display text-sm font-bold uppercase tracking-[0.22em] text-white/58">
+              Tradition · Community · Excellence
+            </p>
+            <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/16 bg-white/[0.06] px-3 py-2 text-[0.68rem] font-black uppercase tracking-[0.16em] text-white/78">
+              <span className="size-2 rounded-full bg-[#69B88F] shadow-[0_0_0_4px_rgba(105,184,143,0.14)]" />
               2026–27 lending is open
             </div>
-            <h1 className="mt-7 max-w-3xl font-display text-[clamp(3.3rem,8.5vw,6.65rem)] leading-[0.88] tracking-[-0.055em] text-white">
-              EVERY KID
-              <span className="block text-[#9fc7d6]">DESERVES A</span>
-              CLEAN SLIDE.
+            <h1 className="mt-7 max-w-3xl font-display text-[clamp(3.4rem,8vw,6.5rem)] font-bold uppercase leading-[0.86] tracking-[-0.035em] text-white">
+              Little Rockers,
+              <span className="block text-[#F1B9BC]">ready for the ice.</span>
             </h1>
-            <p className="mt-7 max-w-xl text-base leading-7 text-white/75 sm:text-lg">
+            <p className="mt-7 max-w-xl text-base leading-7 text-white/68 sm:text-lg">
               Borrow curling shoes and a broom for the whole season—free for
               every Little Rocker. Find a size, send a request, and pick it up
-              from Scott at the rink.
+              from Scott at the club.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
-                href="/register"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-6 text-sm font-black text-[#59141f] transition-transform hover:-translate-y-0.5"
-              >
-                <UserPlus className="size-4" />
-                Register a child
-              </Link>
-              <Link
                 href="/request"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#e5b94a] px-6 text-sm font-black text-[#392b08] transition-transform hover:-translate-y-0.5"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#BC1F25] px-6 text-sm font-black text-white transition-transform hover:-translate-y-0.5 hover:bg-[#A51B20]"
               >
                 <ClipboardCheck className="size-4" />
                 Request gear
               </Link>
+              <Link
+                href="/register"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/24 bg-white px-6 text-sm font-black text-[#2C2E35] transition-transform hover:-translate-y-0.5"
+              >
+                <UserPlus className="size-4" />
+                Register a child
+              </Link>
             </div>
             <Link
               href="/lookup"
-              className="mt-6 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-white/75 hover:text-white"
+              className="mt-6 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-white/62 hover:text-white"
             >
               <Eye className="size-4" />
               See what my child has
               <ArrowRight className="size-4" />
             </Link>
           </div>
-          <LiveHouse
+          <RinkAvailability
             available={Number(stats.equipment.available)}
             shoes={availableShoes}
             brooms={availableBrooms}
@@ -568,7 +568,7 @@ export default function Dashboard() {
         </div>
       </section>
 
-      <section aria-label="Season snapshot" className="grid border-y border-[#c5d6dc] sm:grid-cols-3">
+      <section aria-label="Season snapshot" className="grid border-y border-[#C9D0D4] sm:grid-cols-3">
         {[
           {
             value: stats.kids.total,
@@ -590,17 +590,17 @@ export default function Dashboard() {
             key={item.label}
             className={cn(
               "flex items-center gap-4 px-3 py-5 sm:px-6",
-              index < 2 && "border-b border-[#c5d6dc] sm:border-b-0 sm:border-r"
+              index < 2 && "border-b border-[#C9D0D4] sm:border-b-0 sm:border-r"
             )}
           >
-            <span className="font-display text-4xl leading-none text-[#751c2b]">
+            <span className="font-display text-4xl leading-none text-[#BC1F25]">
               {item.value}
             </span>
             <span>
-              <span className="block text-sm font-extrabold text-[#15242b]">
+              <span className="block text-sm font-extrabold text-[#2C2E35]">
                 {item.label}
               </span>
-              <span className="text-xs text-[#5d7078]">{item.note}</span>
+              <span className="text-xs text-[#5B6870]">{item.note}</span>
             </span>
           </div>
         ))}
@@ -609,15 +609,15 @@ export default function Dashboard() {
       <section id="availability" className="scroll-mt-28">
         <div className="grid gap-7 lg:grid-cols-[0.78fr_1.22fr] lg:items-end">
           <div>
-            <p className="text-[0.7rem] font-black uppercase tracking-[0.18em] text-[#751c2b]">
+            <p className="text-[0.7rem] font-black uppercase tracking-[0.18em] text-[#BC1F25]">
               Live from the equipment room
             </p>
-            <h2 className="mt-3 max-w-2xl font-display text-4xl leading-[0.96] tracking-[-0.04em] text-[#15242b] sm:text-5xl">
+            <h2 className="mt-3 max-w-2xl font-display text-4xl leading-[0.96] tracking-[-0.04em] text-[#2C2E35] sm:text-5xl">
               FIND THE RIGHT FIT BEFORE PRACTICE.
             </h2>
           </div>
           <div>
-            <p className="max-w-xl text-base leading-7 text-[#5d7078]">
+            <p className="max-w-xl text-base leading-7 text-[#5B6870]">
               Counts update as gear is checked out and returned. Search your
               child’s name to see their current equipment, or browse what is
               ready now.
@@ -626,8 +626,8 @@ export default function Dashboard() {
               <label htmlFor="child-search" className="sr-only">
                 Search by child’s name
               </label>
-              <div className="flex min-h-14 overflow-hidden border border-[#b8cdd4] bg-white shadow-sm focus-within:border-[#2480a8] focus-within:ring-2 focus-within:ring-[#2480a8]/20">
-                <Search className="ml-4 size-5 shrink-0 self-center text-[#75868d]" />
+              <div className="flex min-h-14 overflow-hidden border border-[#B9C1C6] bg-white shadow-sm focus-within:border-[#BC1F25] focus-within:ring-2 focus-within:ring-[#BC1F25]/20">
+                <Search className="ml-4 size-5 shrink-0 self-center text-[#69767E]" />
                 <input
                   id="child-search"
                   type="search"
@@ -635,11 +635,11 @@ export default function Dashboard() {
                   onChange={(event) => setSearchTerm(event.target.value)}
                   placeholder="Search by child’s name"
                   autoComplete="off"
-                  className="min-w-0 flex-1 bg-transparent px-3 text-base text-[#15242b] outline-none placeholder:text-[#89979c]"
+                  className="min-w-0 flex-1 bg-transparent px-3 text-base text-[#2C2E35] outline-none placeholder:text-[#7C878D]"
                 />
                 <button
                   type="submit"
-                  className="m-1 inline-flex min-w-12 items-center justify-center bg-[#153b4d] px-4 text-sm font-black text-white hover:bg-[#0f2c3a]"
+                  className="m-1 inline-flex min-w-12 items-center justify-center bg-[#2C2E35] px-4 text-sm font-black text-white hover:bg-[#1D2026]"
                 >
                   <span className="hidden sm:inline">Look up</span>
                   <ArrowRight className="size-4 sm:ml-2" />
@@ -666,7 +666,7 @@ export default function Dashboard() {
         </div>
 
         {shortSizes.length > 0 ? (
-          <div className="mt-5 flex flex-col justify-between gap-4 border-l-4 border-[#e5b94a] bg-[#fff9e9] px-5 py-4 sm:flex-row sm:items-center">
+          <div className="mt-5 flex flex-col justify-between gap-4 border-l-4 border-[#BC1F25] bg-[#fff9e9] px-5 py-4 sm:flex-row sm:items-center">
             <div className="flex gap-3">
               <AlertTriangle className="mt-0.5 size-5 shrink-0 text-[#8b6113]" />
               <div>
@@ -685,7 +685,7 @@ export default function Dashboard() {
             </div>
             <Link
               href="/request"
-              className="inline-flex min-h-11 shrink-0 items-center gap-2 self-start rounded-full bg-[#751c2b] px-5 text-sm font-black text-white hover:bg-[#59141f]"
+              className="inline-flex min-h-11 shrink-0 items-center gap-2 self-start rounded-full bg-[#BC1F25] px-5 text-sm font-black text-white hover:bg-[#99191E]"
             >
               Request a size
               <ArrowRight className="size-4" />
@@ -696,11 +696,11 @@ export default function Dashboard() {
 
       <section
         id="how-it-works"
-        className="scroll-mt-28 overflow-hidden bg-[#153b4d] text-white"
+        className="scroll-mt-28 overflow-hidden bg-[#2C2E35] text-white"
       >
         <div className="grid lg:grid-cols-[0.7fr_1.3fr]">
           <div className="border-b border-white/10 p-6 sm:p-9 lg:border-b-0 lg:border-r">
-            <p className="text-[0.7rem] font-black uppercase tracking-[0.18em] text-[#9fc7d6]">
+            <p className="text-[0.7rem] font-black uppercase tracking-[0.18em] text-[#CBD1D5]">
               Your path onto the ice
             </p>
             <h2 className="mt-4 font-display text-4xl leading-[0.96] tracking-[-0.04em] sm:text-5xl">
@@ -753,7 +753,7 @@ export default function Dashboard() {
                 <span className="absolute right-6 top-5 font-display text-5xl text-white/[0.06]">
                   {step.number}
                 </span>
-                <step.icon className="size-6 text-[#e5b94a]" />
+                <step.icon className="size-6 text-[#BC1F25]" />
                 <h3 className="mt-8 text-xl font-extrabold">{step.title}</h3>
                 <p className="mt-2 max-w-xs text-sm leading-6 text-white/60">
                   {step.copy}
@@ -761,7 +761,7 @@ export default function Dashboard() {
                 {step.href ? (
                   <Link
                     href={step.href}
-                    className="mt-5 inline-flex min-h-10 items-center gap-1.5 text-sm font-bold text-[#9fc7d6] hover:text-white"
+                    className="mt-5 inline-flex min-h-10 items-center gap-1.5 text-sm font-bold text-[#CBD1D5] hover:text-white"
                   >
                     {step.action}
                     <ArrowRight className="size-4" />
@@ -796,12 +796,12 @@ export default function Dashboard() {
             copy: "Report damage when it happens and return gear promptly so it is ready for next year.",
           },
         ].map((item) => (
-          <div key={item.title} className="border-t-2 border-[#2480a8] bg-white px-5 py-6">
-            <item.icon className="size-5 text-[#751c2b]" />
-            <h3 className="mt-5 text-lg font-extrabold text-[#15242b]">
+          <div key={item.title} className="border-t-2 border-[#BC1F25] bg-white px-5 py-6">
+            <item.icon className="size-5 text-[#BC1F25]" />
+            <h3 className="mt-5 text-lg font-extrabold text-[#2C2E35]">
               {item.title}
             </h3>
-            <p className="mt-2 text-sm leading-6 text-[#5d7078]">{item.copy}</p>
+            <p className="mt-2 text-sm leading-6 text-[#5B6870]">{item.copy}</p>
           </div>
         ))}
       </section>

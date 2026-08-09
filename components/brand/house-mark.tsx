@@ -1,33 +1,34 @@
 import { cn } from "@/lib/utils";
 
-type HouseMarkProps = {
+export function HouseMark({
+  className,
+  light = false,
+}: {
   className?: string;
   light?: boolean;
-};
-
-export function HouseMark({ className, light = false }: HouseMarkProps) {
+}) {
   return (
     <span
       aria-hidden="true"
       className={cn(
-        "relative inline-flex size-9 shrink-0 items-center justify-center rounded-full",
-        light ? "bg-white" : "bg-[#751c2b]",
+        "relative inline-flex shrink-0 items-center justify-center rounded-full",
+        light ? "bg-white" : "bg-[#BC1F25]",
         className
       )}
     >
       <span
         className={cn(
           "absolute size-[72%] rounded-full",
-          light ? "bg-[#2480a8]" : "bg-white"
+          light ? "bg-[#5B6870]" : "bg-white"
         )}
       />
       <span
         className={cn(
           "absolute size-[43%] rounded-full",
-          light ? "bg-white" : "bg-[#2480a8]"
+          light ? "bg-white" : "bg-[#5B6870]"
         )}
       />
-      <span className="absolute size-[18%] rounded-full bg-[#e5b94a]" />
+      <span className="absolute size-[16%] rounded-full bg-[#2C2E35]" />
     </span>
   );
 }
