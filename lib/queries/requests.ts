@@ -1,5 +1,5 @@
 import { eq, desc } from "drizzle-orm";
-import { db, type NewEquipmentRequest } from "../db";
+import { db } from "../db";
 import { equipmentRequests, kids } from "../db/schema";
 
 export async function getAllRequests() {
