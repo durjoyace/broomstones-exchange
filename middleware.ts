@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 const COOKIE_NAME = "broomstones_auth";
 
-// HMAC-SHA256 using Web Crypto API (Edge-compatible)
 async function verifySignedCookie(signed: string): Promise<boolean> {
   const secret = process.env.AUTH_SECRET;
   if (!secret) return false;
@@ -21,25 +20,47 @@ async function verifySignedCookie(signed: string): Promise<boolean> {
     false,
     ["sign"]
   );
-  const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(value));
-  const expected = Array.from(new Uint8Array(sig))
-    .map((b) => b.toString(16).padStart(2, "0"))
+  const signedBytes = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(value)
+  );
+  const expected = Array.from(new Uint8Array(signedBytes))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
     .join("");
 
   if (signature.length !== expected.length) return false;
 
-  // Timing-safe comparison
   let mismatch = 0;
-  for (let i = 0; i < signature.length; i++) {
-    mismatch |= signature.charCodeAt(i) ^ expected.charCodeAt(i);
+  for (let index = 0; index < signature.length; index++) {
+    mismatch |= signature.charCodeAt(index) ^ expected.charCodeAt(index);
   }
 
   return mismatch === 0 && value.startsWith("authenticated:");
 }
 
+function isPublicFamilyMutation(request: NextRequest) {
+  if (request.method !== "POST") return false;
+
+  return ["/api/kids", "/api/requests", "/api/waitlist"].includes(
+    request.nextUrl.pathname
+  );
+}
+
 export async function middleware(request: NextRequest) {
+  if (isPublicFamilyMutation(request)) {
+    return NextResponse.next();
+  }
+
   const authCookie = request.cookies.get(COOKIE_NAME);
-  if (!authCookie?.value || !(await verifySignedCookie(authCookie.value))) {
+  const authenticated =
+    authCookie?.value && (await verifySignedCookie(authCookie.value));
+
+  if (!authenticated) {
+    if (request.nextUrl.pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const loginUrl = new URL("/admin", request.url);
     loginUrl.searchParams.set("redirect", request.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
@@ -56,5 +77,10 @@ export const config = {
     "/print/:path*",
     "/waitlist/:path*",
     "/match/:path*",
+    "/api/checkouts/:path*",
+    "/api/equipment/:path*",
+    "/api/kids/:path*",
+    "/api/requests/:path*",
+    "/api/waitlist/:path*",
   ],
 };
