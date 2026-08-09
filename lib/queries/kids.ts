@@ -1,5 +1,5 @@
 import { and, eq, ilike, isNull, sql } from "drizzle-orm";
-import { db, type Kid, type NewKid } from "../db";
+import { db, type NewKid } from "../db";
 import { kids, checkouts, equipment } from "../db/schema";
 
 export async function getAllKids() {
