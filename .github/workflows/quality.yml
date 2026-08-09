@@ -37,6 +37,7 @@ jobs:
           npm install --save-dev shadcn@^4.1.0
           npm audit fix --omit=dev
           npm audit --omit=dev --audit-level=high
+          npm install
 
       - name: Lint
         run: npm run lint -- --max-warnings=0
