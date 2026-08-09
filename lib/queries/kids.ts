@@ -45,8 +45,8 @@ export async function getKidByIdentity(name: string, parentEmail: string) {
     .from(kids)
     .where(
       and(
-        ilike(kids.name, name.trim()),
-        ilike(kids.parentEmail, parentEmail.trim()),
+        sql<boolean>`lower(trim(${kids.name})) = lower(${name.trim()})`,
+        sql<boolean>`lower(trim(${kids.parentEmail})) = lower(${parentEmail.trim()})`,
         isNull(kids.deletedAt)
       )
     )
