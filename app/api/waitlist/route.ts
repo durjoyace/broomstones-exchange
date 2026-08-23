@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getActiveWaitlist, addToWaitlist } from "@/lib/queries/waitlist";
+import {
+  getActiveWaitlist,
+  addToWaitlist,
+  updateWaitlistNotification,
+} from "@/lib/queries/waitlist";
 import { getKidByIdentity } from "@/lib/queries/kids";
-import { waitlistSchema } from "@/lib/validations/waitlist";
+import {
+  waitlistSchema,
+  waitlistStatusSchema,
+} from "@/lib/validations/waitlist";
 import { isAuthenticated } from "@/lib/auth";
 
 export async function GET() {
@@ -56,5 +63,36 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error adding to waitlist:", error);
     return NextResponse.json({ error: "Failed to add to waitlist" }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  if (!(await isAuthenticated())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const parsed = waitlistStatusSchema.safeParse(await request.json());
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Choose a valid waitlist update." },
+        { status: 400 }
+      );
+    }
+
+    const updated = await updateWaitlistNotification(
+      parsed.data.id,
+      parsed.data.notified
+    );
+
+    if (!updated) {
+      return NextResponse.json({ error: "Waitlist entry not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error("Error updating waitlist:", error);
+    return NextResponse.json({ error: "Failed to update waitlist" }, { status: 500 });
   }
 }

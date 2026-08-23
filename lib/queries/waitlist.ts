@@ -53,3 +53,13 @@ export async function addToWaitlist(data: {
 
   return { entry };
 }
+
+export async function updateWaitlistNotification(id: number, notified: boolean) {
+  const [entry] = await db
+    .update(equipmentWaitlist)
+    .set({ notifiedAt: notified ? new Date() : null })
+    .where(eq(equipmentWaitlist.id, id))
+    .returning();
+
+  return entry ?? null;
+}

@@ -1,6 +1,12 @@
 import { eq, isNull, sql, desc } from "drizzle-orm";
 import { db } from "../db";
-import { equipment, kids, checkouts } from "../db/schema";
+import {
+  equipment,
+  kids,
+  checkouts,
+  equipmentRequests,
+  equipmentWaitlist,
+} from "../db/schema";
 
 export async function getDashboardStats() {
   // Run all queries in parallel
@@ -12,6 +18,8 @@ export async function getDashboardStats() {
     availableShoesBySize,
     availableBroomsBySize,
     recentActivity,
+    pendingRequestsCount,
+    activeWaitlistCount,
   ] = await Promise.all([
     // 1. Equipment aggregate stats
     db
@@ -95,6 +103,16 @@ export async function getDashboardStats() {
       .innerJoin(equipment, eq(checkouts.equipmentId, equipment.id))
       .orderBy(desc(sql`COALESCE(${checkouts.returnedAt}, ${checkouts.checkedOutAt})`))
       .limit(10),
+
+    db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(equipmentRequests)
+      .where(eq(equipmentRequests.status, "pending")),
+
+    db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(equipmentWaitlist)
+      .where(isNull(equipmentWaitlist.notifiedAt)),
   ]);
 
   return {
@@ -105,5 +123,7 @@ export async function getDashboardStats() {
     availableShoesBySize,
     availableBroomsBySize,
     recentActivity,
+    requests: { pending: pendingRequestsCount[0].count },
+    waitlist: { active: activeWaitlistCount[0].count },
   };
 }

@@ -166,42 +166,46 @@ export default function CheckoutsPage() {
     }
   };
 
-  const handleBulkReturn = async () => {
-    if (selectedIds.size === 0) return;
+  const returnMany = async (ids: number[]) => {
+    if (ids.length === 0) return;
     setBulkReturning(true);
+
     try {
-      await Promise.all(
-        Array.from(selectedIds).map((id) =>
+      const results = await Promise.allSettled(
+        ids.map((id) =>
           fetch(`/api/checkouts/${id}/return`, { method: "POST" })
         )
       );
-      toast.success(`${selectedIds.size} item(s) returned`);
+
+      const returnedCount = results.filter(
+        (result) => result.status === "fulfilled" && result.value.ok
+      ).length;
+
+      if (returnedCount === ids.length) {
+        toast.success(
+          `${returnedCount} ${returnedCount === 1 ? "item" : "items"} returned`
+        );
+      } else if (returnedCount > 0) {
+        toast.error(
+          `${returnedCount} of ${ids.length} items returned. Review the remaining checkouts and retry.`
+        );
+      } else {
+        toast.error("No items were returned. Check the connection and retry.");
+      }
+
       setSelectedIds(new Set());
-      fetchData();
-    } catch {
-      toast.error("Some returns failed");
+      await fetchData();
     } finally {
       setBulkReturning(false);
     }
   };
 
+  const handleBulkReturn = async () => {
+    await returnMany(Array.from(selectedIds));
+  };
+
   const handleReturnAll = async () => {
-    if (checkouts.length === 0) return;
-    setBulkReturning(true);
-    try {
-      await Promise.all(
-        checkouts.map((c) =>
-          fetch(`/api/checkouts/${c.id}/return`, { method: "POST" })
-        )
-      );
-      toast.success(`All ${checkouts.length} item(s) returned`);
-      setSelectedIds(new Set());
-      fetchData();
-    } catch {
-      toast.error("Some returns failed");
-    } finally {
-      setBulkReturning(false);
-    }
+    await returnMany(checkouts.map((checkout) => checkout.id));
   };
 
   const toggleSelect = (id: number) => {

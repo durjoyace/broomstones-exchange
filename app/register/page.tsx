@@ -14,7 +14,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GRADE_OPTIONS } from "@/lib/constants";
+import {
+  GRADE_OPTIONS,
+  REQUEST_PREFILL_STORAGE_KEY,
+} from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 const initialForm = {
@@ -46,6 +49,13 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (response.ok) {
+        sessionStorage.setItem(
+          REQUEST_PREFILL_STORAGE_KEY,
+          JSON.stringify({
+            kidName: formData.name,
+            parentEmail: formData.parent_email,
+          })
+        );
         setSubmitted(true);
         toast.success("Child registered");
       } else if (data.details?.fieldErrors) {

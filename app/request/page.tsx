@@ -8,6 +8,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Brush,
+  Check,
   CheckCircle2,
   ClipboardList,
   Footprints,
@@ -20,12 +21,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { REQUEST_PREFILL_STORAGE_KEY } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 type SizeCount = { size: string | null; count: number };
 
 const initialForm = {
-  child_name: "",
+  kid_name: "",
   parent_email: "",
   equipment_type: "shoes" as "shoes" | "broom",
   size: "",
@@ -43,6 +45,33 @@ export default function RequestPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [joinedWaitlist, setJoinedWaitlist] = useState(false);
+  const [prefilledRegistration, setPrefilledRegistration] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem(REQUEST_PREFILL_STORAGE_KEY);
+      if (!stored) return;
+
+      const prefill = JSON.parse(stored) as {
+        kidName?: unknown;
+        parentEmail?: unknown;
+      };
+
+      if (
+        typeof prefill.kidName === "string" &&
+        typeof prefill.parentEmail === "string"
+      ) {
+        setFormData((current) => ({
+          ...current,
+          kid_name: prefill.kidName as string,
+          parent_email: prefill.parentEmail as string,
+        }));
+        setPrefilledRegistration(true);
+      }
+    } catch {
+      sessionStorage.removeItem(REQUEST_PREFILL_STORAGE_KEY);
+    }
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -97,6 +126,7 @@ export default function RequestPage() {
 
       const data = await response.json();
       if (response.ok) {
+        sessionStorage.removeItem(REQUEST_PREFILL_STORAGE_KEY);
         setSubmitted(true);
         toast.success("Equipment request sent");
       } else {
@@ -110,7 +140,7 @@ export default function RequestPage() {
   }
 
   async function joinWaitlist() {
-    if (!formData.child_name || !formData.parent_email || !formData.size) return;
+    if (!formData.kid_name || !formData.parent_email || !formData.size) return;
     setSubmitting(true);
 
     try {
@@ -122,6 +152,7 @@ export default function RequestPage() {
 
       const data = await response.json();
       if (response.ok) {
+        sessionStorage.removeItem(REQUEST_PREFILL_STORAGE_KEY);
         setJoinedWaitlist(true);
         toast.success(
           data.message === "Already on waitlist"
@@ -210,7 +241,7 @@ export default function RequestPage() {
       Number(item.count) > 0
   );
   const canSubmit = Boolean(
-    formData.child_name && formData.parent_email && formData.size
+    formData.kid_name && formData.parent_email && formData.size
   );
 
   return (
@@ -287,15 +318,39 @@ export default function RequestPage() {
             </div>
           ) : null}
 
+          {prefilledRegistration ? (
+            <div className="mb-6 flex flex-col gap-3 rounded-xl border border-[#B9D9CC] bg-[#EDF6F2] px-4 py-3 text-sm text-[#226A52] sm:flex-row sm:items-center sm:justify-between">
+              <span className="flex items-center gap-2 font-semibold">
+                <Check className="size-4 shrink-0" />
+                Registration details carried over for {formData.kid_name}.
+              </span>
+              <button
+                type="button"
+                className="min-h-9 self-start font-bold underline underline-offset-4 hover:text-[#194D3C] sm:self-auto"
+                onClick={() => {
+                  sessionStorage.removeItem(REQUEST_PREFILL_STORAGE_KEY);
+                  setFormData((current) => ({
+                    ...current,
+                    kid_name: "",
+                    parent_email: "",
+                  }));
+                  setPrefilledRegistration(false);
+                }}
+              >
+                Use someone else
+              </button>
+            </div>
+          ) : null}
+
           <form onSubmit={submitRequest}>
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <Label htmlFor="child_name">Child’s full name</Label>
+                <Label htmlFor="kid_name">Child’s full name</Label>
                 <Input
-                  id="child_name"
-                  name="child_name"
-                  value={formData.child_name}
-                  onChange={(event) => update("child_name", event.target.value)}
+                  id="kid_name"
+                  name="kid_name"
+                  value={formData.kid_name}
+                  onChange={(event) => update("kid_name", event.target.value)}
                   required
                   autoComplete="name"
                   placeholder="As registered"

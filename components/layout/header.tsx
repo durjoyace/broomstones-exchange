@@ -10,7 +10,9 @@ import {
   ClipboardCheck,
   ExternalLink,
   Home,
+  Inbox,
   Menu,
+  Printer,
   ScanSearch,
   Users,
 } from "lucide-react";
@@ -23,6 +25,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/useAuth";
 
 type NavigationItem = { name: string; href: string; icon?: LucideIcon };
 
@@ -33,10 +36,11 @@ const publicNavigation: NavigationItem[] = [
 ];
 
 const coordinatorNavigation: NavigationItem[] = [
-  { name: "Dashboard", href: "/", icon: Home },
+  { name: "Overview", href: "/", icon: Home },
   { name: "Inventory", href: "/equipment", icon: Boxes },
   { name: "Kids", href: "/kids", icon: Users },
   { name: "Checkouts", href: "/checkouts", icon: ClipboardCheck },
+  { name: "Requests", href: "/waitlist", icon: Inbox },
 ];
 
 const coordinatorPrefixes = [
@@ -51,9 +55,10 @@ const coordinatorPrefixes = [
 export function Header() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const coordinatorMode = coordinatorPrefixes.some((prefix) =>
-    pathname.startsWith(prefix)
-  );
+  const { authenticated } = useAuth(false);
+  const coordinatorMode =
+    coordinatorPrefixes.some((prefix) => pathname.startsWith(prefix)) ||
+    (pathname === "/" && authenticated === true);
   const navigation = coordinatorMode
     ? coordinatorNavigation
     : publicNavigation;
@@ -191,12 +196,12 @@ export function Header() {
               {coordinatorMode ? (
                 <>
                   <Link
-                    href="/waitlist"
+                    href="/print"
                     onClick={() => setOpen(false)}
                     className="mt-3 flex min-h-12 items-center justify-between rounded-lg border border-[#C9D0D4] bg-white px-4 py-3 text-base font-bold text-[#2C2E35]"
                   >
-                    Waitlist
-                    <ArrowRight className="size-4" />
+                    Print session sheet
+                    <Printer className="size-4" />
                   </Link>
                   <Link
                     href="/match"
