@@ -45,6 +45,8 @@ type Stats = {
   };
   kids: { total: number };
   checkouts: { activeCheckouts: number };
+  requests: { pending: number };
+  waitlist: { active: number };
   kidsSizeDistribution: Array<{ shoeSize: string; count: number }>;
   availableShoesBySize: Array<{ size: string; count: number }>;
   availableBroomsBySize: Array<{ size: string; count: number }>;
@@ -233,9 +235,15 @@ function RinkAvailability({
   );
 }
 
-function CoordinatorPanel({ stats }: { stats: Stats }) {
-  const { authenticated, logout } = useAuth(false);
-
+function CoordinatorPanel({
+  stats,
+  authenticated,
+  logout,
+}: {
+  stats: Stats;
+  authenticated: boolean | null;
+  logout: () => Promise<void>;
+}) {
   if (authenticated === null) {
     return <Skeleton className="h-28 w-full rounded-2xl" />;
   }
@@ -272,14 +280,19 @@ function CoordinatorPanel({ stats }: { stats: Stats }) {
     { href: "/checkouts", icon: CheckCircle, label: "Checkouts" },
     { href: "/match", icon: ScanSearch, label: "Match sizes" },
     { href: "/print", icon: Printer, label: "Print sheets" },
-    { href: "/waitlist", icon: ClipboardList, label: "Waitlist" },
+    {
+      href: "/waitlist",
+      icon: ClipboardList,
+      label: "Requests",
+      count: Number(stats.requests.pending) + Number(stats.waitlist.active),
+    },
   ];
 
   return (
     <section className="overflow-hidden rounded-2xl border border-[#454850] bg-[#2C2E35] text-white shadow-[0_18px_50px_rgba(44,46,53,0.14)]">
       <header className="flex flex-col justify-between gap-4 border-b border-white/10 px-5 py-5 sm:flex-row sm:items-center sm:px-7">
         <h2 className="text-2xl font-extrabold tracking-[-0.03em]">
-          Season operations
+          Coordinator desk
         </h2>
         <button
           type="button"
@@ -299,8 +312,15 @@ function CoordinatorPanel({ stats }: { stats: Stats }) {
             className="group flex min-h-28 flex-col justify-between bg-[#2C2E35] p-4 transition-colors hover:bg-[#353840]"
           >
             <action.icon className="size-5 text-[#CBD1D5]" />
-            <span className="flex items-center justify-between text-sm font-bold">
-              {action.label}
+            <span className="flex items-center justify-between gap-2 text-sm font-bold">
+              <span>
+                {action.label}
+                {"count" in action && Number(action.count) > 0 ? (
+                  <span className="ml-2 rounded-full bg-[#BC1F25] px-2 py-0.5 text-[0.68rem] tabular-nums text-white">
+                    {action.count}
+                  </span>
+                ) : null}
+              </span>
               <ChevronRight className="size-4 opacity-50 transition-transform group-hover:translate-x-0.5" />
             </span>
           </Link>
@@ -407,6 +427,7 @@ export default function Dashboard() {
   const [loadError, setLoadError] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
+  const { authenticated, logout } = useAuth(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -442,7 +463,7 @@ export default function Dashboard() {
     }
   }
 
-  if (loading) {
+  if (loading || authenticated === null) {
     return <DashboardSkeleton />;
   }
 
@@ -476,6 +497,45 @@ export default function Dashboard() {
           </a>
         </div>
       </section>
+    );
+  }
+
+  if (authenticated) {
+    const openQueue =
+      Number(stats.requests.pending) + Number(stats.waitlist.active);
+
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <h1 className="font-display text-4xl font-bold uppercase leading-none tracking-[-0.035em] text-[#2C2E35] sm:text-5xl">
+              Season operations
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#5B6870]">
+              {openQueue > 0
+                ? `${openQueue} family ${openQueue === 1 ? "item needs" : "items need"} attention before the next session.`
+                : "The family request queue is clear. Inventory and checkout tools are ready."}
+            </p>
+          </div>
+          <Link
+            href="/waitlist"
+            className="inline-flex min-h-11 items-center gap-2 self-start rounded-full bg-[#BC1F25] px-5 text-sm font-black text-white hover:bg-[#99191E]"
+          >
+            <ClipboardList className="size-4" />
+            Open request queue
+            {openQueue > 0 ? (
+              <span className="rounded-full bg-white/18 px-2 py-0.5 text-xs tabular-nums">
+                {openQueue}
+              </span>
+            ) : null}
+          </Link>
+        </div>
+        <CoordinatorPanel
+          stats={stats}
+          authenticated={authenticated}
+          logout={logout}
+        />
+      </div>
     );
   }
 
@@ -758,7 +818,11 @@ export default function Dashboard() {
         </ul>
       </section>
 
-      <CoordinatorPanel stats={stats} />
+      <CoordinatorPanel
+        stats={stats}
+        authenticated={authenticated}
+        logout={logout}
+      />
     </div>
   );
 }

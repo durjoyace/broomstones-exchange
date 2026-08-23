@@ -13,6 +13,8 @@ export async function GET() {
       {
         ...stats,
         recentActivity: authenticated ? stats.recentActivity : [],
+        requests: authenticated ? stats.requests : { pending: 0 },
+        waitlist: authenticated ? stats.waitlist : { active: 0 },
       },
       {
         headers: {

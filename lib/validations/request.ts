@@ -8,4 +8,10 @@ export const requestSchema = z.object({
   notes: z.string().max(500).optional().or(z.literal("")),
 });
 
+export const requestStatusSchema = z.object({
+  id: z.coerce.number().int().positive(),
+  status: z.enum(["pending", "fulfilled", "cancelled"]),
+});
+
 export type RequestInput = z.infer<typeof requestSchema>;
+export type RequestStatusInput = z.infer<typeof requestStatusSchema>;

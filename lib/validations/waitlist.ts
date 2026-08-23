@@ -7,4 +7,10 @@ export const waitlistSchema = z.object({
   size: z.string().trim().min(1, "Size is required").max(20),
 });
 
+export const waitlistStatusSchema = z.object({
+  id: z.coerce.number().int().positive(),
+  notified: z.boolean(),
+});
+
 export type WaitlistInput = z.infer<typeof waitlistSchema>;
+export type WaitlistStatusInput = z.infer<typeof waitlistStatusSchema>;

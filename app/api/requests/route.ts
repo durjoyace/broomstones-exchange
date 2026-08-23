@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllRequests, createRequest } from "@/lib/queries/requests";
+import {
+  getAllRequests,
+  createRequest,
+  updateRequestStatus,
+} from "@/lib/queries/requests";
 import { getKidByIdentity } from "@/lib/queries/kids";
-import { requestSchema } from "@/lib/validations/request";
+import {
+  requestSchema,
+  requestStatusSchema,
+} from "@/lib/validations/request";
 import { isAuthenticated } from "@/lib/auth";
 
 export async function GET() {
@@ -53,5 +60,36 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error creating request:", error);
     return NextResponse.json({ error: "Failed to create request" }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  if (!(await isAuthenticated())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const parsed = requestStatusSchema.safeParse(await request.json());
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Choose a valid request status." },
+        { status: 400 }
+      );
+    }
+
+    const updated = await updateRequestStatus(
+      parsed.data.id,
+      parsed.data.status
+    );
+
+    if (!updated) {
+      return NextResponse.json({ error: "Request not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error("Error updating request:", error);
+    return NextResponse.json({ error: "Failed to update request" }, { status: 500 });
   }
 }

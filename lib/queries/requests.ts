@@ -15,10 +15,27 @@ export async function getAllRequests() {
       fulfilledAt: equipmentRequests.fulfilledAt,
       kidName: kids.name,
       kidShoeSize: kids.shoeSize,
+      parentEmail: kids.parentEmail,
     })
     .from(equipmentRequests)
     .innerJoin(kids, eq(equipmentRequests.kidId, kids.id))
     .orderBy(desc(equipmentRequests.createdAt));
+}
+
+export async function updateRequestStatus(
+  id: number,
+  status: "pending" | "fulfilled" | "cancelled"
+) {
+  const [request] = await db
+    .update(equipmentRequests)
+    .set({
+      status,
+      fulfilledAt: status === "fulfilled" ? new Date() : null,
+    })
+    .where(eq(equipmentRequests.id, id))
+    .returning();
+
+  return request ?? null;
 }
 
 export async function createRequest(data: {

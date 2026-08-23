@@ -31,6 +31,9 @@ export type EquipmentCondition = (typeof EQUIPMENT_CONDITIONS)[number]["value"];
 export type EquipmentStatus = (typeof EQUIPMENT_STATUSES)[number]["value"];
 export type Grade = (typeof GRADE_OPTIONS)[number]["value"];
 
+export const REQUEST_PREFILL_STORAGE_KEY =
+  "broomstones-request-prefill-v1";
+
 export const SHOE_SIZES = [
   "Y10", "Y11", "Y12", "Y13",
   "1", "1.5", "2", "2.5", "3", "3.5", "4", "4.5",
