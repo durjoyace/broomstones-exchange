@@ -67,26 +67,23 @@ export default function RegisterPage() {
   if (submitted) {
     return (
       <div className="mx-auto max-w-2xl py-4 sm:py-10">
-        <div className="overflow-hidden border border-[#b9d9cc] bg-white shadow-[0_22px_60px_rgba(21,36,43,0.1)]">
+        <div className="overflow-hidden rounded-2xl border border-[#B9D9CC] bg-white shadow-[0_18px_48px_rgba(44,46,53,0.1)]">
           <div className="bg-[#edf6f2] px-6 py-10 text-center sm:px-10">
-            <span className="mx-auto flex size-16 items-center justify-center rounded-full bg-[#2e9a72] text-white shadow-lg">
+            <span className="mx-auto flex size-16 items-center justify-center rounded-full bg-[#2E7C60] text-white shadow-lg">
               <CheckCircle2 className="size-8" />
             </span>
-            <p className="mt-6 text-[0.7rem] font-black uppercase tracking-[0.17em] text-[#226a52]">
-              Registration complete
-            </p>
-            <h1 className="mt-3 font-display text-4xl leading-none text-[#15242b]">
-              {formData.name.toUpperCase()} IS ON THE ROSTER.
+            <h1 className="mt-6 font-display text-4xl leading-none text-[#2C2E35]">
+              REGISTRATION COMPLETE.
             </h1>
-            <p className="mx-auto mt-4 max-w-md text-base leading-7 text-[#5d7078]">
-              Next, choose shoes, a broom, or both. Scott will prepare available
-              gear for pickup at a Little Rockers session.
+            <p className="mx-auto mt-4 max-w-md text-base leading-7 text-[#5B6870]">
+              {formData.name} is on the roster. Next, choose shoes, a broom, or
+              both for pickup at a Little Rockers session.
             </p>
           </div>
           <div className="grid gap-3 p-5 sm:grid-cols-2 sm:p-7">
             <Button
               size="lg"
-              className="h-12 rounded-full bg-[#751c2b] text-white hover:bg-[#59141f]"
+              className="h-12 rounded-full bg-[#BC1F25] text-white hover:bg-[#99191E]"
               render={<Link href="/request" />}
             >
               Request equipment
@@ -95,7 +92,7 @@ export default function RegisterPage() {
             <Button
               variant="outline"
               size="lg"
-              className="h-12 rounded-full border-[#c5d6dc] bg-white"
+              className="h-12 rounded-full border-[#C9D0D4] bg-white"
               render={<Link href="/" />}
             >
               Back to availability
@@ -113,19 +110,19 @@ export default function RegisterPage() {
     <div className="mx-auto max-w-5xl">
       <Link
         href="/"
-        className="mb-6 inline-flex min-h-10 items-center gap-2 text-sm font-bold text-[#5d7078] hover:text-[#15242b]"
+        className="mb-6 inline-flex min-h-10 items-center gap-2 text-sm font-bold text-[#5B6870] hover:text-[#2C2E35]"
       >
         <ArrowLeft className="size-4" />
         Back to availability
       </Link>
 
-      <div className="grid overflow-hidden border border-[#cfdee3] bg-white shadow-[0_24px_70px_rgba(21,36,43,0.09)] lg:grid-cols-[0.72fr_1.28fr]">
-        <aside className="relative overflow-hidden bg-[#153b4d] p-6 text-white sm:p-9">
+      <div className="grid overflow-hidden rounded-2xl border border-[#D9DEE1] bg-white shadow-[0_20px_56px_rgba(44,46,53,0.09)] lg:grid-cols-[0.72fr_1.28fr]">
+        <aside className="relative overflow-hidden bg-[#2C2E35] p-6 text-white sm:p-9">
           <div
             aria-hidden="true"
-            className="absolute -bottom-24 -right-24 size-64 rounded-full border-[42px] border-[#2480a8]/35"
+            className="absolute -bottom-24 -right-24 size-64 rounded-full border-[42px] border-[#BC1F25]/30"
           />
-          <p className="relative text-[0.7rem] font-black uppercase tracking-[0.17em] text-[#9fc7d6]">
+          <p className="relative text-[0.7rem] font-black uppercase tracking-[0.17em] text-white/60">
             Step 1 of 2
           </p>
           <h1 className="relative mt-4 font-display text-4xl leading-[0.95] tracking-[-0.04em] sm:text-5xl">
@@ -172,29 +169,26 @@ export default function RegisterPage() {
           </ol>
 
           <div className="relative mt-10 flex gap-3 border-t border-white/10 pt-6 text-xs leading-5 text-white/55">
-            <ShieldCheck className="mt-0.5 size-4 shrink-0 text-[#9fc7d6]" />
+            <ShieldCheck className="mt-0.5 size-4 shrink-0 text-[#F1B9BC]" />
             Contact details are visible only to the equipment coordinator.
           </div>
         </aside>
 
         <div className="p-5 sm:p-9">
-          <div className="mb-8 flex items-center justify-between gap-4 border-b border-[#dce7eb] pb-5">
+          <div className="mb-8 flex items-center justify-between gap-4 border-b border-[#D9DEE1] pb-5">
             <div>
-              <p className="text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#751c2b]">
-                Little Rockers
-              </p>
-              <h2 className="mt-1 text-2xl font-extrabold tracking-[-0.03em] text-[#15242b]">
+              <h2 className="text-2xl font-extrabold tracking-[-0.03em] text-[#2C2E35]">
                 Register a child
               </h2>
             </div>
-            <span className="flex size-11 items-center justify-center rounded-full bg-[#e6f0f4] text-[#153b4d]">
+            <span className="flex size-11 items-center justify-center rounded-full bg-[#E8ECEE] text-[#2C2E35]">
               <Footprints className="size-5" />
             </span>
           </div>
 
           <form onSubmit={handleSubmit} noValidate>
             <fieldset>
-              <legend className="text-sm font-extrabold text-[#15242b]">
+              <legend className="text-sm font-extrabold text-[#2C2E35]">
                 Child details
               </legend>
               <div className="mt-4 space-y-5">
@@ -261,7 +255,7 @@ export default function RegisterPage() {
                         {fieldErrors.shoe_size[0]}
                       </p>
                     ) : (
-                      <p id="shoe-size-hint" className="mt-1.5 text-xs text-[#75868d]">
+                      <p id="shoe-size-hint" className="mt-1.5 text-xs text-[#69767E]">
                         Use the size they wear now.
                       </p>
                     )}
@@ -270,8 +264,8 @@ export default function RegisterPage() {
               </div>
             </fieldset>
 
-            <fieldset className="mt-8 border-t border-[#dce7eb] pt-7">
-              <legend className="text-sm font-extrabold text-[#15242b]">
+            <fieldset className="mt-8 border-t border-[#D9DEE1] pt-7">
+              <legend className="text-sm font-extrabold text-[#2C2E35]">
                 Parent or guardian
               </legend>
               <div className="mt-4 space-y-5">
@@ -317,7 +311,7 @@ export default function RegisterPage() {
                   </div>
                   <div>
                     <Label htmlFor="parent_phone">
-                      Phone <span className="font-normal text-[#75868d]">(optional)</span>
+                      Phone <span className="font-normal text-[#69767E]">(optional)</span>
                     </Label>
                     <Input
                       id="parent_phone"
@@ -337,13 +331,13 @@ export default function RegisterPage() {
             <Button
               type="submit"
               size="lg"
-              className="mt-8 h-12 w-full rounded-full bg-[#751c2b] text-white hover:bg-[#59141f]"
+              className="mt-8 h-12 w-full rounded-full bg-[#BC1F25] text-white hover:bg-[#99191E]"
               disabled={loading}
             >
               {loading ? "Saving registration…" : "Register child"}
               {!loading ? <ArrowRight className="size-4" /> : null}
             </Button>
-            <p className="mt-3 text-center text-xs text-[#75868d]">
+            <p className="mt-3 text-center text-xs text-[#69767E]">
               Registration does not reserve gear. You’ll choose equipment next.
             </p>
           </form>

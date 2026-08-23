@@ -104,7 +104,7 @@ function EquipmentAvailability({
   const total = items.reduce((sum, item) => sum + Number(item.count), 0);
 
   return (
-    <article className="overflow-hidden border border-[#D9DEE1] bg-white shadow-[0_18px_50px_rgba(21,36,43,0.07)]">
+    <article className="overflow-hidden rounded-2xl border border-[#D9DEE1] bg-white shadow-[0_16px_40px_rgba(44,46,53,0.07)]">
       <header className="flex items-start justify-between gap-4 border-b border-[#E3E7E9] px-5 py-5 sm:px-6">
         <div className="flex gap-3">
           <span className="flex size-11 items-center justify-center rounded-full bg-[#E8ECEE] text-[#2C2E35]">
@@ -242,12 +242,9 @@ function CoordinatorPanel({ stats }: { stats: Stats }) {
 
   if (!authenticated) {
     return (
-      <section className="flex flex-col justify-between gap-5 border border-[#D9DEE1] bg-white px-5 py-6 sm:flex-row sm:items-center sm:px-7">
+      <section className="flex flex-col justify-between gap-5 rounded-2xl border border-[#D9DEE1] bg-white px-5 py-6 sm:flex-row sm:items-center sm:px-7">
         <div>
-          <p className="text-[0.68rem] font-bold uppercase tracking-[0.15em] text-[#BC1F25]">
-            Club operations
-          </p>
-          <h2 className="mt-1 text-xl font-extrabold tracking-[-0.025em] text-[#2C2E35]">
+          <h2 className="text-xl font-extrabold tracking-[-0.025em] text-[#2C2E35]">
             Running the exchange today?
           </h2>
           <p className="mt-1 text-sm text-[#5B6870]">
@@ -279,16 +276,11 @@ function CoordinatorPanel({ stats }: { stats: Stats }) {
   ];
 
   return (
-    <section className="overflow-hidden border border-[#454850] bg-[#2C2E35] text-white shadow-[0_22px_60px_rgba(21,36,43,0.16)]">
+    <section className="overflow-hidden rounded-2xl border border-[#454850] bg-[#2C2E35] text-white shadow-[0_18px_50px_rgba(44,46,53,0.14)]">
       <header className="flex flex-col justify-between gap-4 border-b border-white/10 px-5 py-5 sm:flex-row sm:items-center sm:px-7">
-        <div>
-          <p className="text-[0.68rem] font-bold uppercase tracking-[0.16em] text-[#CBD1D5]">
-            Coordinator desk
-          </p>
-          <h2 className="mt-1 text-2xl font-extrabold tracking-[-0.03em]">
-            Season operations
-          </h2>
-        </div>
+        <h2 className="text-2xl font-extrabold tracking-[-0.03em]">
+          Season operations
+        </h2>
         <button
           type="button"
           onClick={logout}
@@ -401,11 +393,6 @@ function DashboardSkeleton() {
   return (
     <div className="space-y-8">
       <Skeleton className="h-[42rem] rounded-[2rem] lg:h-[36rem]" />
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Skeleton className="h-24" />
-        <Skeleton className="h-24" />
-        <Skeleton className="h-24" />
-      </div>
       <div className="grid gap-5 lg:grid-cols-2">
         <Skeleton className="h-80" />
         <Skeleton className="h-80" />
@@ -515,18 +502,15 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-12 sm:space-y-16">
-      <section className="relative isolate overflow-hidden rounded-[1.5rem] border border-[#454850] bg-[#2C2E35] text-white shadow-[0_28px_80px_rgba(44,46,53,0.2)]">
+      <section className="relative isolate overflow-hidden rounded-2xl border border-[#454850] bg-[#2C2E35] text-white shadow-[0_24px_64px_rgba(44,46,53,0.18)]">
         <div aria-hidden="true" className="absolute -left-28 -top-28 size-80 rounded-full border-[42px] border-[#BC1F25]/16" />
         <div className="relative grid items-center gap-10 px-5 py-8 sm:px-9 sm:py-12 lg:min-h-[38rem] lg:grid-cols-[1.02fr_0.98fr] lg:px-14">
           <div className="relative z-10">
-            <p className="font-display text-sm font-bold uppercase tracking-[0.22em] text-white/58">
-              Tradition · Community · Excellence
-            </p>
-            <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/16 bg-white/[0.06] px-3 py-2 text-[0.68rem] font-black uppercase tracking-[0.16em] text-white/78">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/16 bg-white/[0.06] px-3 py-2 text-[0.68rem] font-black uppercase tracking-[0.16em] text-white/78">
               <span className="size-2 rounded-full bg-[#69B88F] shadow-[0_0_0_4px_rgba(105,184,143,0.14)]" />
               2026–27 lending is open
             </div>
-            <h1 className="mt-7 max-w-3xl font-display text-[clamp(3.4rem,8vw,6.5rem)] font-bold uppercase leading-[0.86] tracking-[-0.035em] text-white">
+            <h1 className="mt-6 max-w-3xl font-display text-[clamp(3.4rem,8vw,6rem)] font-bold uppercase leading-[0.86] tracking-[-0.035em] text-white">
               Little Rockers,
               <span className="block text-[#F1B9BC]">ready for the ice.</span>
             </h1>
@@ -568,51 +552,10 @@ export default function Dashboard() {
         </div>
       </section>
 
-      <section aria-label="Season snapshot" className="grid border-y border-[#C9D0D4] sm:grid-cols-3">
-        {[
-          {
-            value: stats.kids.total,
-            label: "Little Rockers registered",
-            note: "Growing the game together",
-          },
-          {
-            value: stats.checkouts.activeCheckouts,
-            label: "Items on the ice",
-            note: "Currently checked out",
-          },
-          {
-            value: stats.equipment.available,
-            label: "Items ready to borrow",
-            note: "Live inventory",
-          },
-        ].map((item, index) => (
-          <div
-            key={item.label}
-            className={cn(
-              "flex items-center gap-4 px-3 py-5 sm:px-6",
-              index < 2 && "border-b border-[#C9D0D4] sm:border-b-0 sm:border-r"
-            )}
-          >
-            <span className="font-display text-4xl leading-none text-[#BC1F25]">
-              {item.value}
-            </span>
-            <span>
-              <span className="block text-sm font-extrabold text-[#2C2E35]">
-                {item.label}
-              </span>
-              <span className="text-xs text-[#5B6870]">{item.note}</span>
-            </span>
-          </div>
-        ))}
-      </section>
-
       <section id="availability" className="scroll-mt-28">
         <div className="grid gap-7 lg:grid-cols-[0.78fr_1.22fr] lg:items-end">
           <div>
-            <p className="text-[0.7rem] font-black uppercase tracking-[0.18em] text-[#BC1F25]">
-              Live from the equipment room
-            </p>
-            <h2 className="mt-3 max-w-2xl font-display text-4xl leading-[0.96] tracking-[-0.04em] text-[#2C2E35] sm:text-5xl">
+            <h2 className="max-w-2xl font-display text-4xl leading-[0.96] tracking-[-0.04em] text-[#2C2E35] sm:text-5xl">
               FIND THE RIGHT FIT BEFORE PRACTICE.
             </h2>
           </div>
@@ -626,7 +569,7 @@ export default function Dashboard() {
               <label htmlFor="child-search" className="sr-only">
                 Search by child’s name
               </label>
-              <div className="flex min-h-14 overflow-hidden border border-[#B9C1C6] bg-white shadow-sm focus-within:border-[#BC1F25] focus-within:ring-2 focus-within:ring-[#BC1F25]/20">
+              <div className="flex min-h-14 overflow-hidden rounded-xl border border-[#B9C1C6] bg-white focus-within:border-[#BC1F25] focus-within:ring-2 focus-within:ring-[#BC1F25]/20">
                 <Search className="ml-4 size-5 shrink-0 self-center text-[#69767E]" />
                 <input
                   id="child-search"
@@ -639,7 +582,7 @@ export default function Dashboard() {
                 />
                 <button
                   type="submit"
-                  className="m-1 inline-flex min-w-12 items-center justify-center bg-[#2C2E35] px-4 text-sm font-black text-white hover:bg-[#1D2026]"
+                  className="m-1 inline-flex min-w-12 items-center justify-center rounded-lg bg-[#2C2E35] px-4 text-sm font-black text-white hover:bg-[#1D2026]"
                 >
                   <span className="hidden sm:inline">Look up</span>
                   <ArrowRight className="size-4 sm:ml-2" />
@@ -666,7 +609,7 @@ export default function Dashboard() {
         </div>
 
         {shortSizes.length > 0 ? (
-          <div className="mt-5 flex flex-col justify-between gap-4 border-l-4 border-[#BC1F25] bg-[#fff9e9] px-5 py-4 sm:flex-row sm:items-center">
+          <div className="mt-5 flex flex-col justify-between gap-4 rounded-xl border border-[#E5D3A8] bg-[#FFF9E9] px-5 py-4 sm:flex-row sm:items-center">
             <div className="flex gap-3">
               <AlertTriangle className="mt-0.5 size-5 shrink-0 text-[#8b6113]" />
               <div>
@@ -696,14 +639,11 @@ export default function Dashboard() {
 
       <section
         id="how-it-works"
-        className="scroll-mt-28 overflow-hidden bg-[#2C2E35] text-white"
+        className="scroll-mt-28 overflow-hidden rounded-2xl bg-[#2C2E35] text-white"
       >
         <div className="grid lg:grid-cols-[0.7fr_1.3fr]">
           <div className="border-b border-white/10 p-6 sm:p-9 lg:border-b-0 lg:border-r">
-            <p className="text-[0.7rem] font-black uppercase tracking-[0.18em] text-[#CBD1D5]">
-              Your path onto the ice
-            </p>
-            <h2 className="mt-4 font-display text-4xl leading-[0.96] tracking-[-0.04em] sm:text-5xl">
+            <h2 className="font-display text-4xl leading-[0.96] tracking-[-0.04em] sm:text-5xl">
               BORROW IN FOUR EASY ENDS.
             </h2>
             <p className="mt-5 max-w-md text-sm leading-6 text-white/65">
@@ -778,32 +718,44 @@ export default function Dashboard() {
         </div>
       </section>
 
-      <section className="grid gap-5 md:grid-cols-3">
-        {[
-          {
-            icon: ShieldCheck,
-            title: "No fees. No fuss.",
-            copy: "The exchange is free for Little Rockers families and supported by the club community.",
-          },
-          {
-            icon: PackageCheck,
-            title: "One set per curler.",
-            copy: "Borrow one pair of shoes and one broom per child so every family gets a fair shot.",
-          },
-          {
-            icon: Clock3,
-            title: "Return at season’s end.",
-            copy: "Report damage when it happens and return gear promptly so it is ready for next year.",
-          },
-        ].map((item) => (
-          <div key={item.title} className="border-t-2 border-[#BC1F25] bg-white px-5 py-6">
-            <item.icon className="size-5 text-[#BC1F25]" />
-            <h3 className="mt-5 text-lg font-extrabold text-[#2C2E35]">
-              {item.title}
-            </h3>
-            <p className="mt-2 text-sm leading-6 text-[#5B6870]">{item.copy}</p>
-          </div>
-        ))}
+      <section className="overflow-hidden rounded-2xl border border-[#D9DEE1] bg-white lg:grid lg:grid-cols-[0.62fr_1.38fr]">
+        <div className="bg-[#BC1F25] px-6 py-8 text-white sm:px-8 lg:py-10">
+          <h2 className="font-display text-4xl leading-[0.94] tracking-[-0.035em] sm:text-5xl">
+            THE CLUB LENDING AGREEMENT.
+          </h2>
+          <p className="mt-4 max-w-md text-sm leading-6 text-white/72">
+            Free equipment works because every family helps care for the shared rack.
+          </p>
+        </div>
+        <ul className="divide-y divide-[#E3E7E9]">
+          {[
+            {
+              icon: ShieldCheck,
+              title: "Free for Little Rockers",
+              copy: "The club community covers the exchange, so families never pay a lending fee.",
+            },
+            {
+              icon: PackageCheck,
+              title: "One set per curler",
+              copy: "Borrow one pair of shoes and one broom per child so every family gets a fair shot.",
+            },
+            {
+              icon: Clock3,
+              title: "Back at season’s end",
+              copy: "Report damage when it happens and return gear promptly for the next young curler.",
+            },
+          ].map((item) => (
+            <li key={item.title} className="flex gap-4 px-6 py-6 sm:px-8">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#F4E4E5] text-[#BC1F25]">
+                <item.icon className="size-5" />
+              </span>
+              <div>
+                <h3 className="font-extrabold text-[#2C2E35]">{item.title}</h3>
+                <p className="mt-1 text-sm leading-6 text-[#5B6870]">{item.copy}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <CoordinatorPanel stats={stats} />
